@@ -3,85 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Online Status</title>
+    <title>OJT Dashboard - Home</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary: #1877f2; --success: #42b72a; --bg: #f0f2f5; --white: #ffffff; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); margin: 0; padding: 0; }
-        
-        nav { background: var(--primary); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .logo { font-weight: bold; font-size: 20px; }
-        .logout { color: white; text-decoration: none; font-size: 14px; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 5px; }
-
-        main { max-width: 900px; margin: 20px auto; padding: 0 20px; }
-        
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        
-        /* Online Users UI */
-        .online-box { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
-        .user-badge { 
-            background: #e7f3ff; color: var(--primary); padding: 6px 15px; 
-            border-radius: 20px; font-size: 14px; font-weight: 600; 
-            display: flex; align-items: center; gap: 8px;
-        }
-        .dot { height: 8px; width: 8px; background-color: var(--success); border-radius: 50%; display: inline-block; }
-
-        @media (max-width: 600px) {
-            nav { padding: 1rem; }
-            .logo { font-size: 18px; }
-        }
+        :root { --primary: #1877f2; --success: #42b72a; --bg: #f0f2f5; --white: #fff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 0; }
+        nav { background: var(--primary); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
+        .card { background: var(--white); padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        #chat-window { height: 250px; overflow-y: auto; border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #f9f9f9; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+        .msg { padding: 8px 12px; border-radius: 15px; max-width: 80%; font-size: 14px; background: #e4e6eb; align-self: flex-start; }
+        .user-label { font-size: 11px; font-weight: bold; color: var(--primary); display: block; }
+        .chat-input-area { display: flex; gap: 10px; }
+        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
+        .send-btn { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        .online-dot { height: 8px; width: 8px; background: var(--success); border-radius: 50%; display: inline-block; margin-right: 5px; }
     </style>
 </head>
 <body>
-
     <nav>
-        <div class="logo"><i class="fa-solid fa-gauge-high"></i> Dashboard</div>
-        <a href="index.html" class="logout">Logout</a>
+        <span style="font-weight: bold;"><i class="fa-solid fa-rocket"></i> OJT Portal</span>
+        <a href="index.html" style="color: white; text-decoration: none; font-size: 13px;">Logout</a>
     </nav>
-
-    <main>
+    <div class="container">
         <div class="card">
-            <h1>Welcome Back!</h1>
-            <p>You are now logged into your secure portal.</p>
+            <h2>Welcome, <span id="display-name">User</span>!</h2>
+            <p style="font-size: 14px; color: #65676b;">You are active in the secure OJT system.</p>
         </div>
-
         <div class="card">
-            <h3><i class="fa-solid fa-users"></i> Users Online Now</h3>
-            <div id="online-list" class="online-box">
-                <span style="color: #606770;">Checking who's active...</span>
+            <h4><span class="online-dot"></span> Online Users</h4>
+            <div id="online-users" style="font-size: 13px; color: #1877f2; font-weight: 600;">Loading...</div>
+        </div>
+        <div class="card">
+            <h3><i class="fa-solid fa-comments"></i> Global Conversation</h3>
+            <div id="chat-window"></div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Type a message...">
+                <button class="send-btn" onclick="sendMsg()">Send</button>
             </div>
         </div>
-    </main>
+    </div>
 
     <script>
-        // Replace with your actual Script URL
         const scriptURL = "https://script.google.com/macros/s/AKfycbwJcFtextFeGl1oF5N2HQyJKQyojR48Jphb6592E5AR9lR5h5r41ULNyIkmu53Mau71/exec";
+        const myName = localStorage.getItem("username") || "Guest";
+        document.getElementById('display-name').innerText = myName;
 
-        async function updateOnlineStatus() {
+        async function refreshData() {
             try {
-                const response = await fetch(`${scriptURL}?action=getOnlineUsers`);
-                const users = await response.json();
-                const listDiv = document.getElementById('online-list');
+                // Online Users
+                const uRes = await fetch(`${scriptURL}?action=getOnlineUsers`);
+                const users = await uRes.json();
+                document.getElementById('online-users').innerText = users.join(', ');
 
-                if (users.length > 0) {
-                    listDiv.innerHTML = users.map(user => `
-                        <div class="user-badge">
-                            <span class="dot"></span> ${user}
-                        </div>
-                    `).join('');
-                } else {
-                    listDiv.innerHTML = '<span style="color: #606770;">No users online.</span>';
-                }
-            } catch (err) {
-                console.error("Failed to fetch online users.");
-            }
+                // Messages
+                const mRes = await fetch(`${scriptURL}?action=getMessages`);
+                const msgs = await mRes.json();
+                const win = document.getElementById('chat-window');
+                win.innerHTML = msgs.map(m => `
+                    <div class="msg">
+                        <span class="user-label">${m.user}</span>
+                        ${m.text}
+                    </div>
+                `).join('');
+                win.scrollTop = win.scrollHeight;
+            } catch(e) { console.error("Update failed"); }
         }
 
-        // Run immediately on load
-        updateOnlineStatus();
-        
-        // Refresh every 20 seconds to keep it live
-        setInterval(updateOnlineStatus, 20000);
+        async function sendMsg() {
+            const input = document.getElementById('chat-input');
+            if(!input.value) return;
+            const text = encodeURIComponent(input.value);
+            input.value = "";
+            await fetch(`${scriptURL}?action=sendMessage&username=${myName}&text=${text}`);
+            refreshData();
+        }
+
+        setInterval(refreshData, 4000);
+        refreshData();
     </script>
 </body>
 </html>

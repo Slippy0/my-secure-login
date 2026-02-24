@@ -9,36 +9,44 @@
         :root { --primary: #1877f2; --success: #42b72a; --bg: #f0f2f5; --white: #fff; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 0; }
         nav { background: var(--primary); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
-        .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
+        .container { max-width: 700px; margin: 20px auto; padding: 0 15px; }
         .card { background: var(--white); padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        #chat-window { height: 250px; overflow-y: auto; border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #f9f9f9; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
-        .msg { padding: 8px 12px; border-radius: 15px; max-width: 80%; font-size: 14px; background: #e4e6eb; align-self: flex-start; }
-        .user-label { font-size: 11px; font-weight: bold; color: var(--primary); display: block; }
-        .chat-input-area { display: flex; gap: 10px; }
-        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
-        .send-btn { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
-        .online-dot { height: 8px; width: 8px; background: var(--success); border-radius: 50%; display: inline-block; margin-right: 5px; }
+        
+        /* Message POV Styling */
+        #chat-window { height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 10px; border: 1px solid #dddfe2; border-radius: 8px; background: #f9f9f9; }
+        .msg { padding: 10px 15px; border-radius: 18px; max-width: 70%; font-size: 14px; line-height: 1.4; position: relative; }
+        
+        /* Your messages (Right Side) */
+        .msg-me { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
+        /* Others messages (Left Side) */
+        .msg-them { align-self: flex-start; background: #e4e6eb; color: #1c1e21; border-bottom-left-radius: 4px; }
+        
+        .user-label { font-size: 11px; font-weight: bold; margin-bottom: 3px; display: block; }
+        .msg-me .user-label { color: #d0e3ff; text-align: right; }
+        .msg-them .user-label { color: var(--primary); }
+
+        .input-area { display: flex; gap: 10px; margin-top: 10px; }
+        input { flex: 1; padding: 12px; border: 1px solid #dddfe2; border-radius: 25px; outline: none; }
+        .send-btn { background: var(--primary); color: white; border: none; padding: 0 25px; border-radius: 25px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
     <nav>
-        <span style="font-weight: bold;"><i class="fa-solid fa-rocket"></i> OJT Portal</span>
-        <a href="index.html" style="color: white; text-decoration: none; font-size: 13px;">Logout</a>
+        <span style="font-weight: bold;"><i class="fa-solid fa-chart-line"></i> Dashboard</span>
+        <a href="index.html" style="color: white; text-decoration: none; font-size: 13px;">Log Out</a>
     </nav>
     <div class="container">
         <div class="card">
-            <h2>Welcome, <span id="display-name">User</span>!</h2>
-            <p style="font-size: 14px; color: #65676b;">You are active in the secure OJT system.</p>
+            <h2 style="margin:0;">Hello, <span id="user-name">...</span>!</h2>
+            <div style="font-size: 13px; color: var(--primary); margin-top: 5px;">
+                <i class="fa-solid fa-circle" style="color:var(--success); font-size:8px;"></i> Online: <span id="online-list">...</span>
+            </div>
         </div>
         <div class="card">
-            <h4><span class="online-dot"></span> Online Users</h4>
-            <div id="online-users" style="font-size: 13px; color: #1877f2; font-weight: 600;">Loading...</div>
-        </div>
-        <div class="card">
-            <h3><i class="fa-solid fa-comments"></i> Global Conversation</h3>
+            <h3><i class="fa-solid fa-comments"></i> Live Conversation</h3>
             <div id="chat-window"></div>
-            <div class="chat-input-area">
-                <input type="text" id="chat-input" placeholder="Type a message...">
+            <div class="input-area">
+                <input type="text" id="chat-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMsg()">
                 <button class="send-btn" onclick="sendMsg()">Send</button>
             </div>
         </div>
@@ -46,41 +54,49 @@
 
     <script>
         const scriptURL = "https://script.google.com/macros/s/AKfycbwJcFtextFeGl1oF5N2HQyJKQyojR48Jphb6592E5AR9lR5h5r41ULNyIkmu53Mau71/exec";
+        
+        // Get the username saved during login
         const myName = localStorage.getItem("username") || "Guest";
-        document.getElementById('display-name').innerText = myName;
+        document.getElementById('user-name').innerText = myName;
 
-        async function refreshData() {
+        async function updateChat() {
             try {
-                // Online Users
+                // Get Online Users
                 const uRes = await fetch(`${scriptURL}?action=getOnlineUsers`);
                 const users = await uRes.json();
-                document.getElementById('online-users').innerText = users.join(', ');
+                document.getElementById('online-list').innerText = users.join(', ');
 
-                // Messages
+                // Get Messages
                 const mRes = await fetch(`${scriptURL}?action=getMessages`);
                 const msgs = await mRes.json();
-                const win = document.getElementById('chat-window');
-                win.innerHTML = msgs.map(m => `
-                    <div class="msg">
-                        <span class="user-label">${m.user}</span>
-                        ${m.text}
-                    </div>
-                `).join('');
-                win.scrollTop = win.scrollHeight;
-            } catch(e) { console.error("Update failed"); }
+                const window = document.getElementById('chat-window');
+                
+                window.innerHTML = msgs.map(m => {
+                    // Check if the message is from YOU or SOMEONE ELSE
+                    const isMe = m.user === myName;
+                    return `
+                        <div class="msg ${isMe ? 'msg-me' : 'msg-them'}">
+                            <span class="user-label">${isMe ? 'You' : m.user}</span>
+                            ${m.text}
+                        </div>
+                    `;
+                }).join('');
+                window.scrollTop = window.scrollHeight;
+            } catch(e) { console.error("Refresh failed"); }
         }
 
         async function sendMsg() {
             const input = document.getElementById('chat-input');
-            if(!input.value) return;
+            if (!input.value.trim()) return;
             const text = encodeURIComponent(input.value);
             input.value = "";
+            // Temporarily show message locally for speed
             await fetch(`${scriptURL}?action=sendMessage&username=${myName}&text=${text}`);
-            refreshData();
+            updateChat();
         }
 
-        setInterval(refreshData, 4000);
-        refreshData();
+        setInterval(updateChat, 4000);
+        updateChat();
     </script>
 </body>
 </html>

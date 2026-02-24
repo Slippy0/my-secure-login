@@ -11,46 +11,40 @@
         nav { background: var(--primary); color: white; padding: 1rem; display: flex; justify-content: space-between; }
         .container { max-width: 700px; margin: 15px auto; padding: 0 10px; }
         .card { background: var(--white); padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        
         #chat-window { height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 15px; border: 1px solid #dddfe2; border-radius: 8px; background: #f9f9f9; }
-        
         .msg-wrapper { display: flex; flex-direction: column; width: 100%; }
         .msg { padding: 10px 15px; border-radius: 18px; max-width: 75%; font-size: 14px; word-wrap: break-word; }
-        
-        /* YOU (Right) */
         .my-msg-wrapper { align-items: flex-end; }
         .my-msg { background: var(--primary); color: white; border-bottom-right-radius: 4px; }
-        .my-label { color: var(--primary); font-weight: bold; font-size: 11px; margin-bottom: 2px; text-align: right; }
-
-        /* OTHERS (Left) */
         .other-msg-wrapper { align-items: flex-start; }
         .other-msg { background: #e4e6eb; color: #1c1e21; border-bottom-left-radius: 4px; }
-        .other-label { color: #65676b; font-weight: bold; font-size: 11px; margin-bottom: 2px; }
-
-        .media-content { max-width: 100%; border-radius: 10px; margin-top: 5px; cursor: pointer; }
+        .media-content { max-width: 100%; border-radius: 10px; margin-top: 5px; }
         .input-area { display: flex; gap: 8px; align-items: center; background: white; padding: 10px; border-radius: 0 0 12px 12px; }
         input[type="text"] { flex: 1; padding: 10px 15px; border: 1px solid #dddfe2; border-radius: 20px; outline: none; }
-        .icon-btn { font-size: 20px; color: var(--primary); cursor: pointer; }
+        .icon-btn { font-size: 20px; color: var(--primary); cursor: pointer; padding: 5px; }
         .send-btn { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
-    <nav><strong>OJT Portal</strong> <a href="index.html" onclick="localStorage.clear()" style="color:white; text-decoration:none; font-size:12px;">Logout</a></nav>
+    <nav><strong>Dashboard</strong> <a href="index.html" onclick="localStorage.clear()" style="color:white; text-decoration:none;">Logout</a></nav>
     <div class="container">
         <div class="card">
-            <h3 style="margin:0;">Hello, <span id="user-name">User</span>!</h3>
+            <h3 style="margin:0;">Hello, <span id="user-name">...</span>!</h3>
             <p style="font-size:12px; color:green; margin:5px 0 0;">● Online: <span id="online-list">...</span></p>
         </div>
         <div id="chat-window"></div>
         <div class="input-area">
-            <label class="icon-btn"><i class="fa-solid fa-file-import"></i><input type="file" id="file-input" style="display:none;" onchange="uploadFile(this)"></label>
-            <input type="text" id="chat-input" placeholder="Aa" onkeypress="if(event.key==='Enter') sendMsg()">
+            <label class="icon-btn" title="Upload File">
+                <i class="fa-solid fa-paperclip"></i>
+                <input type="file" id="file-input" style="display:none;" onchange="uploadFile(this)">
+            </label>
+            <input type="text" id="chat-input" placeholder="Type message or paste image link..." onkeypress="if(event.key==='Enter') sendMsg()">
             <button class="send-btn" onclick="sendMsg()">Send</button>
         </div>
     </div>
 
     <script>
-        const scriptURL = "https://script.google.com/macros/s/AKfycbwJcFtextFeGl1oF5N2HQyJKQyojR48Jphb6592E5AR9lR5h5r41ULNyIkmu53Mau71/exec";
+        const scriptURL = "REPLACE_WITH_YOUR_DEPLOY_URL";
         const myName = localStorage.getItem("username") || "Guest";
         document.getElementById('user-name').innerText = myName;
 
@@ -68,14 +62,18 @@
                     const isMe = (m.user === myName);
                     let content = m.text;
 
-                    // Image/GIF/Video Check
-                    if (m.text.match(/\.(jpeg|jpg|gif|png)$/i)) content = `<img src="${m.text}" class="media-content" onclick="window.open('${m.text}')">`;
-                    else if (m.text.match(/\.(mp4|webm)$/i)) content = `<video controls class="media-content"><source src="${m.text}"></video>`;
-                    else if (m.text.includes("drive.google.com")) content = `<a href="${m.text}" target="_blank" style="color:inherit;"><i class="fa-solid fa-file-arrow-down"></i> Download File</a>`;
+                    // Image/GIF/Video/Link Detection
+                    if (m.text.match(/\.(jpeg|jpg|gif|png)$/i) || m.text.includes("giphy.com")) {
+                        content = `<img src="${m.text}" class="media-content" onclick="window.open('${m.text}')">`;
+                    } else if (m.text.match(/\.(mp4|webm)$/i)) {
+                        content = `<video controls class="media-content"><source src="${m.text}"></video>`;
+                    } else if (m.text.includes("drive.google.com") || m.text.startsWith("http")) {
+                        content = `<a href="${m.text}" target="_blank" style="color:inherit;">📎 Open Link/File</a>`;
+                    }
 
                     return `
                         <div class="msg-wrapper ${isMe ? 'my-msg-wrapper' : 'other-msg-wrapper'}">
-                            <span class="${isMe ? 'my-label' : 'other-label'}">${isMe ? 'You' : m.user}</span>
+                            <span style="font-size:11px; font-weight:bold; color:#65676b; margin-bottom:2px;">${isMe ? 'You' : m.user}</span>
                             <div class="msg ${isMe ? 'my-msg' : 'other-msg'}">${content}</div>
                         </div>`;
                 }).join('');
@@ -96,7 +94,7 @@
             const file = input.files[0];
             if(!file) return;
             const reader = new FileReader();
-            document.getElementById('chat-input').placeholder = "Uploading...";
+            document.getElementById('chat-input').placeholder = "Uploading " + file.name + "...";
             
             reader.onload = async function() {
                 const base64 = reader.result.split(',')[1];
@@ -104,7 +102,7 @@
                     action: 'uploadFile', username: myName, fileName: file.name, mimeType: file.type, fileData: base64
                 });
                 await fetch(scriptURL, { method: 'POST', body: params });
-                document.getElementById('chat-input').placeholder = "Aa";
+                document.getElementById('chat-input').placeholder = "Type message or paste image link...";
                 updateData();
             };
             reader.readAsDataURL(file);

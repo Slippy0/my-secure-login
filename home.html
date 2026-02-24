@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Online Status</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary: #1877f2; --success: #42b72a; --bg: #f0f2f5; --white: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); margin: 0; padding: 0; }
+        
+        nav { background: var(--primary); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .logo { font-weight: bold; font-size: 20px; }
+        .logout { color: white; text-decoration: none; font-size: 14px; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 5px; }
+
+        main { max-width: 900px; margin: 20px auto; padding: 0 20px; }
+        
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        
+        /* Online Users UI */
+        .online-box { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+        .user-badge { 
+            background: #e7f3ff; color: var(--primary); padding: 6px 15px; 
+            border-radius: 20px; font-size: 14px; font-weight: 600; 
+            display: flex; align-items: center; gap: 8px;
+        }
+        .dot { height: 8px; width: 8px; background-color: var(--success); border-radius: 50%; display: inline-block; }
+
+        @media (max-width: 600px) {
+            nav { padding: 1rem; }
+            .logo { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo"><i class="fa-solid fa-gauge-high"></i> Dashboard</div>
+        <a href="index.html" class="logout">Logout</a>
+    </nav>
+
+    <main>
+        <div class="card">
+            <h1>Welcome Back!</h1>
+            <p>You are now logged into your secure portal.</p>
+        </div>
+
+        <div class="card">
+            <h3><i class="fa-solid fa-users"></i> Users Online Now</h3>
+            <div id="online-list" class="online-box">
+                <span style="color: #606770;">Checking who's active...</span>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Replace with your actual Script URL
+        const scriptURL = "https://script.google.com/macros/s/AKfycbwJcFtextFeGl1oF5N2HQyJKQyojR48Jphb6592E5AR9lR5h5r41ULNyIkmu53Mau71/exec";
+
+        async function updateOnlineStatus() {
+            try {
+                const response = await fetch(`${scriptURL}?action=getOnlineUsers`);
+                const users = await response.json();
+                const listDiv = document.getElementById('online-list');
+
+                if (users.length > 0) {
+                    listDiv.innerHTML = users.map(user => `
+                        <div class="user-badge">
+                            <span class="dot"></span> ${user}
+                        </div>
+                    `).join('');
+                } else {
+                    listDiv.innerHTML = '<span style="color: #606770;">No users online.</span>';
+                }
+            } catch (err) {
+                console.error("Failed to fetch online users.");
+            }
+        }
+
+        // Run immediately on load
+        updateOnlineStatus();
+        
+        // Refresh every 20 seconds to keep it live
+        setInterval(updateOnlineStatus, 20000);
+    </script>
+</body>
+</html>

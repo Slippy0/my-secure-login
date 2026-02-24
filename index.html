@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Portal - Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root { 
+            --primary: #1877f2; 
+            --secondary: #42b72a; 
+            --bg: #f0f2f5; 
+            --error: #d93025; 
+            --text-main: #1c1e21;
+            --text-sub: #606770;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background-color: var(--bg); 
+            display: flex; justify-content: center; align-items: center; 
+            min-height: 100vh; margin: 0; padding: 20px;
+        }
+
+        .auth-card { 
+            background: white; padding: 2.5rem; border-radius: 12px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1); 
+            width: 100%; max-width: 400px; text-align: center; box-sizing: border-box;
+        }
+
+        h2 { color: var(--text-main); margin-bottom: 8px; font-size: 26px; }
+        #status-msg { margin-bottom: 20px; font-size: 14px; color: var(--text-sub); font-weight: 500; min-height: 20px; }
+
+        .input-group { width: 100%; margin-bottom: 12px; position: relative; }
+
+        input { 
+            width: 100%; padding: 14px; 
+            border: 1px solid #dddfe2; border-radius: 8px; 
+            box-sizing: border-box; font-size: 16px; outline: none; 
+            transition: border-color 0.2s;
+        }
+
+        input:focus { border-color: var(--primary); }
+
+        /* Eye Icon Positioning */
+        .toggle-password {
+            position: absolute; right: 15px; top: 50%;
+            transform: translateY(-50%); cursor: pointer;
+            color: var(--text-sub); font-size: 18px; z-index: 10;
+        }
+
+        .main-btn { 
+            width: 100%; padding: 14px; background-color: var(--primary); 
+            border: none; color: white; border-radius: 8px; 
+            cursor: pointer; font-size: 18px; font-weight: bold; 
+            transition: 0.2s; margin-top: 10px;
+        }
+
+        .main-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+        .main-btn:active { transform: scale(0.98); }
+
+        hr { border: 0; border-top: 1px solid #dddfe2; margin: 25px 0; }
+        .toggle-area { font-size: 14px; color: var(--text-main); }
+        .toggle-link { color: var(--primary); cursor: pointer; font-weight: 600; text-decoration: none; }
+
+        /* Mobile Optimization */
+        @media (max-width: 480px) {
+            .auth-card { padding: 1.5rem; }
+            h2 { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-card">
+        <h2 id="form-title">Login</h2>
+        <div id="status-msg">Enter your details to access the system</div>
+        
+        <form id="authForm">
+            <input type="hidden" name="action" id="actionField" value="login">
+            
+            <div class="input-group">
+                <input type="text" name="username" placeholder="Username" required>
+            </div>
+            
+            <div class="input-group">
+                <input type="password" name="password" id="passwordField" placeholder="Password" required>
+                <i class="fa-solid fa-eye toggle-password" id="eyeIcon" onclick="togglePassword()"></i>
+            </div>
+
+            <button type="submit" class="main-btn" id="submitBtn">Log In</button>
+        </form>
+
+        <hr>
+        <div id="toggle-text" class="toggle-area">
+            New here? <a class="toggle-link" onclick="toggleView()">Create account</a>
+        </div>
+    </div>
+
+    <script>
+        // REPLACE WITH YOUR ACTUAL DEPLOYED URL
+        const scriptURL = "https://script.google.com/macros/s/AKfycbwJcFtextFeGl1oF5N2HQyJKQyojR48Jphb6592E5AR9lR5h5r41ULNyIkmu53Mau71/exec";
+        let currentMode = 'login';
+
+        // 1. Password Visibility Toggle
+        function togglePassword() {
+            const passwordField = document.getElementById('passwordField');
+            const eyeIcon = document.getElementById('eyeIcon');
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                eyeIcon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        // 2. Switch between Login and Register
+        function toggleView() {
+            const title = document.getElementById('form-title');
+            const btn = document.getElementById('submitBtn');
+            const action = document.getElementById('actionField');
+            const toggleArea = document.getElementById('toggle-text');
+            const msg = document.getElementById('status-msg');
+            
+            if (currentMode === 'login') {
+                currentMode = 'register';
+                title.innerText = "Register";
+                btn.innerText = "Sign Up";
+                btn.style.backgroundColor = "var(--secondary)";
+                action.value = "register";
+                msg.innerText = "Create your secure account";
+                toggleArea.innerHTML = 'Already have an account? <a class="toggle-link" onclick="toggleView()">Login here</a>';
+            } else {
+                currentMode = 'login';
+                title.innerText = "Login";
+                btn.innerText = "Log In";
+                btn.style.backgroundColor = "var(--primary)";
+                action.value = "login";
+                msg.innerText = "Enter your details to access the system";
+                toggleArea.innerHTML = 'New here? <a class="toggle-link" onclick="toggleView()">Create account</a>';
+            }
+        }
+
+        // 3. Form Submission Handling
+        document.getElementById('authForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const msg = document.getElementById('status-msg');
+            const btn = document.getElementById('submitBtn');
+            
+            msg.innerText = "Processing...";
+            msg.style.color = "var(--text-sub)";
+            btn.disabled = true;
+
+            const formData = new FormData(this);
+            const params = new URLSearchParams(formData).toString();
+
+            try {
+                const response = await fetch(`${scriptURL}?${params}`);
+                const result = await response.text();
+
+                msg.innerText = result;
+
+                if (result.includes("Successful")) {
+                    msg.style.color = "var(--secondary)";
+                    
+                    // IF LOGIN IS SUCCESSFUL, REDIRECT
+                    if (currentMode === 'login') {
+                        msg.innerText = "Login Successful! Redirecting...";
+                        setTimeout(() => {
+                            window.location.href = "home.html";
+                        }, 1200);
+                    } else {
+                        // If registration was successful, flip back to login
+                        setTimeout(() => toggleView(), 2000);
+                    }
+                } else {
+                    msg.style.color = "var(--error)";
+                }
+            } catch (error) {
+                msg.innerText = "Connection Error. Check your Script URL.";
+                msg.style.color = "var(--error)";
+            }
+            btn.disabled = false;
+        });
+    </script>
+</body>
+</html>

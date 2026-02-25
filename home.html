@@ -6,61 +6,69 @@
     <title>OJT Dashboard</title>
     <style>
         :root { --primary: #1877f2; --bg: #f0f2f5; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; }
-        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 600px; margin: auto; }
-        #chat-window { height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #fff; text-align: left; }
-        .msg { padding: 10px 14px; border-radius: 18px; max-width: 80%; font-size: 14px; background: #e4e6eb; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        #chat-window { height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; background: #fff; margin-bottom: 10px; }
+        .msg { padding: 8px 12px; border-radius: 15px; max-width: 80%; font-size: 14px; background: #e4e6eb; }
         .my-msg { background: var(--primary); color: white; align-self: flex-end; }
-        .chat-img { max-width: 100%; border-radius: 10px; margin-top: 5px; cursor: pointer; }
-        .input-area { display: flex; gap: 10px; margin-top: 15px; }
+        .input-area { display: flex; gap: 5px; }
         #chat-input { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ddd; outline: none; }
+        button { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h3>Hi, <span id="user-name">...</span></h3>
-        <div id="chat-window">Connecting...</div>
-        <div id="auth-check" style="display:none; margin-top:10px; color:red; font-size:12px;">
-            Connection blocked. <a id="script-link" href="#" target="_blank" style="color:blue; font-weight:bold;">Click here to Authorize</a>, then refresh.
-        </div>
+        <h3>Welcome, <span id="user-name">...</span></h3>
+        <p id="online-status" style="font-size: 12px; color: gray;">Connecting...</p>
+        <div id="chat-window">Loading messages...</div>
         <div class="input-area">
-            <input type="text" id="chat-input" placeholder="Aa" onkeypress="if(event.key==='Enter') sendMsg()">
-            <button onclick="sendMsg()" style="border:none; background:none; color:var(--primary); font-size:20px; cursor:pointer;">➤</button>
+            <input type="text" id="chat-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMsg()">
+            <button onclick="sendMsg()">Send</button>
         </div>
+        <br>
+        <a href="index.html" onclick="localStorage.clear()" style="font-size: 12px; color: #666;">Logout</a>
     </div>
 
     <script>
-        const scriptURL = "PASTE_YOUR_NEW_URL_HERE"; 
+        const scriptURL = "PASTE_YOUR_NEW_DEPLOY_URL_HERE"; 
         const myName = localStorage.getItem("username") || "Guest";
         document.getElementById('user-name').innerText = myName;
-        document.getElementById('script-link').href = scriptURL;
 
-        async function update() {
+        async function updateChat() {
             try {
-                const res = await fetch(`${scriptURL}?action=getMessages`);
-                const msgs = await res.json();
-                document.getElementById('auth-check').style.display = "none";
+                const [mRes, uRes] = await Promise.all([
+                    fetch(`${scriptURL}?action=getMessages`),
+                    fetch(`${scriptURL}?action=getOnlineUsers`)
+                ]);
+                const msgs = await mRes.json();
+                const users = await uRes.json();
+                
+                document.getElementById('online-status').innerText = "Online: " + users.join(', ');
+                
                 const box = document.getElementById('chat-window');
-                box.innerHTML = msgs.map(m => {
-                    const isMe = m.user === myName;
-                    let content = m.text;
-                    if (m.text.includes("google.com")) content = `<img src="${m.text}" class="chat-img" onclick="window.open('${m.text}')">`;
-                    return `<div class="msg ${isMe?'my-msg':''}">${content}</div>`;
-                }).join('');
+                box.innerHTML = msgs.map(m => `
+                    <div class="msg ${m.user === myName ? 'my-msg' : ''}">
+                        <small style="display:block; font-size:10px; opacity:0.8;">${m.user}</small>
+                        ${m.text}
+                    </div>
+                `).join('');
                 box.scrollTop = box.scrollHeight;
-            } catch(e) { document.getElementById('auth-check').style.display = "block"; }
+            } catch(e) {
+                document.getElementById('chat-window').innerText = "Connection Error. Make sure you allowed 'Insecure Content' in site settings.";
+            }
         }
 
         async function sendMsg() {
             const input = document.getElementById('chat-input');
-            if(!input.value) return;
-            await fetch(`${scriptURL}?action=sendMessage&username=${encodeURIComponent(myName)}&text=${encodeURIComponent(input.value)}`, {mode:'no-cors'});
+            const text = input.value.trim();
+            if(!text) return;
             input.value = "";
-            setTimeout(update, 1000);
+            await fetch(`${scriptURL}?action=sendMessage&username=${encodeURIComponent(myName)}&text=${encodeURIComponent(text)}`, {mode: 'no-cors'});
+            setTimeout(updateChat, 1000);
         }
 
-        setInterval(update, 5000);
-        update();
+        setInterval(updateChat, 5000);
+        updateChat();
     </script>
 </body>
 </html>

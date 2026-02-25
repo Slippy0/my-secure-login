@@ -54,7 +54,6 @@
             if(!el.value) return;
             const text = el.value;
             el.value = "";
-            // no-cors is essential to bypass the Dangerous block for the POST action
             await fetch(`${scriptURL}?action=sendMessage&username=${myUser}&text=${encodeURIComponent(text)}`, {mode: 'no-cors'});
             setTimeout(load, 1000);
         }

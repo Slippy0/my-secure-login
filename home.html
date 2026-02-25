@@ -1,37 +1,70 @@
-<script>
-    const scriptURL = "PASTE_YOUR_NEW_DEPLOY_URL_HERE";
-    const myUser = localStorage.getItem("username") || "Guest";
-    document.getElementById('display-user').innerText = myUser;
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OJT Portal</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        .chat-card { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        #chat-window { height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 15px; margin: 10px 0; display: flex; flex-direction: column; gap: 10px; background: #fff; }
+        .msg { padding: 8px 12px; border-radius: 15px; background: #e4e6eb; width: fit-content; max-width: 85%; font-size: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .my-msg { background: #0084ff; color: white; align-self: flex-end; }
+        .u-name { font-size: 10px; font-weight: bold; color: #65676b; margin-bottom: 2px; }
+        .my-msg .u-name { color: #d0e8ff; text-align: right; }
+        .input-box { display: flex; gap: 10px; }
+        input { flex: 1; padding: 12px; border-radius: 20px; border: 1px solid #ccc; outline: none; }
+        button { background: #0084ff; color: white; border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="chat-card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong>Hi, <span id="display-user" style="color:#0084ff;">...</span></strong>
+            <a href="index.html" onclick="localStorage.clear()" style="font-size:12px; color:gray; text-decoration:none;">Logout</a>
+        </div>
+        <div id="chat-window">Loading messages...</div>
+        <div class="input-box">
+            <input type="text" id="chat-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') send()">
+            <button onclick="send()">Send</button>
+        </div>
+    </div>
 
-    async function load() {
-        try {
-            const r = await fetch(`${scriptURL}?action=getMessages`);
-            const data = await r.json();
-            
-            const window = document.getElementById('chat-window');
-            window.innerHTML = data.map(m => `
-                <div class="msg ${m.user === myUser ? 'my-msg' : ''}">
-                    <div class="u-name">${m.user}</div>
-                    <div class="msg-content">${m.text}</div>
-                </div>
-            `).join('');
-            window.scrollTop = window.scrollHeight;
-        } catch(e) {
-            console.log("Still blocked? Check the Dangerous badge.");
+    <script>
+        // PASTE YOUR NEW DEPLOYMENT URL HERE
+        const scriptURL = "https://script.google.com/macros/s/AKfycbwJcFtextFeGl1oF5N2HQyJKQyojR48Jphb6592E5AR9lR5h5r41ULNyIkmu53Mau71/exec";
+        const myUser = localStorage.getItem("username") || "Guest";
+        document.getElementById('display-user').innerText = myUser;
+
+        async function load() {
+            try {
+                const r = await fetch(`${scriptURL}?action=getMessages`);
+                const data = await r.json();
+                const window = document.getElementById('chat-window');
+                
+                window.innerHTML = data.map(m => `
+                    <div class="msg ${m.user === myUser ? 'my-msg' : ''}">
+                        <div class="u-name">${m.user}</div>
+                        <div class="msg-text">${m.text}</div>
+                    </div>
+                `).join('');
+                window.scrollTop = window.scrollHeight;
+            } catch(e) {
+                console.log("Connection error. Check the 'Dangerous' badge if it persists.");
+            }
         }
-    }
 
-    async function send() {
-        const el = document.getElementById('chat-input');
-        if(!el.value.trim()) return;
-        const msg = el.value;
-        el.value = "";
-        
-        // mode: 'no-cors' is vital because of that red 'Dangerous' badge
-        await fetch(`${scriptURL}?action=sendMessage&username=${myUser}&text=${encodeURIComponent(msg)}`, {mode: 'no-cors'});
-        setTimeout(load, 1000);
-    }
+        async function send() {
+            const el = document.getElementById('chat-input');
+            const val = el.value.trim();
+            if(!val) return;
+            el.value = "";
+            
+            // Sending with no-cors to bypass the browser's security warning
+            await fetch(`${scriptURL}?action=sendMessage&username=${encodeURIComponent(myUser)}&text=${encodeURIComponent(val)}`, {mode: 'no-cors'});
+            setTimeout(load, 800);
+        }
 
-    setInterval(load, 4000);
-    load();
-</script>
+        setInterval(load, 3000);
+        load();
+    </script>
+</body>
+</html>

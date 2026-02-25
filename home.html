@@ -21,22 +21,24 @@
     </style>
 </head>
 <body>
-    <nav><strong>OJT Portal</strong> <a href="index.html" onclick="localStorage.clear()" style="color:white; text-decoration:none; font-size:12px; border:1px solid white; padding:5px; border-radius:4px;">Logout</a></nav>
+    <nav><strong>OJT Dashboard</strong> <a href="index.html" onclick="localStorage.clear()" style="color:white; text-decoration:none; font-size:12px; border:1px solid white; padding: 5px 10px; border-radius: 4px;">Logout</a></nav>
+    
     <div class="card">
         <h2 style="margin:0;">Welcome, <span id="user-name">...</span>!</h2>
         <small id="online-list" style="color:#42b72a; font-weight:bold;">● Checking Connection...</small>
     </div>
+
     <div class="card">
         <div id="chat-window">Connecting to Server...</div>
         <div style="margin-top:15px;" class="input-area">
-            <label class="btn">📎<input type="file" id="fileIn" style="display:none;" onchange="uploadFile(this)" accept="image/*"></label>
+            <label class="btn" title="Upload Image">📎<input type="file" id="fileIn" style="display:none;" onchange="uploadFile(this)" accept="image/*"></label>
             <input type="text" id="chat-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMsg()">
             <button class="btn" onclick="sendMsg()">➤</button>
         </div>
     </div>
 
     <script>
-        const scriptURL = "PASTE_YOUR_NEW_URL_HERE"; 
+        const scriptURL = "PASTE_YOUR_NEW_DEPLOYMENT_URL_HERE"; 
         const myName = localStorage.getItem("username") || "Guest";
         document.getElementById('user-name').innerText = myName;
 
@@ -65,7 +67,7 @@
                 }).join('');
                 chatBox.scrollTop = chatBox.scrollHeight;
             } catch(e) { 
-                document.getElementById('chat-window').innerHTML = "<div style='text-align:center; padding:20px; color:red;'><b>Connection Blocked</b><br>1. Click the 'Dangerous' icon (top left)<br>2. Go to Site Settings<br>3. Set 'Insecure Content' to ALLOW<br>4. Refresh this page</div>";
+                document.getElementById('chat-window').innerHTML = "<div style='text-align:center; padding:20px; color:red;'><b>Connection Blocked</b><br>1. Click the 'Dangerous' badge (top left)<br>2. Go to Site Settings<br>3. Set 'Insecure Content' to ALLOW<br>4. Refresh this page</div>";
             }
         }
 

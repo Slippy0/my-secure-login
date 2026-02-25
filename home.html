@@ -5,163 +5,118 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OJT Dashboard</title>
     <style>
-        :root { --primary: #1877f2; --bg: #f0f2f5; --white: #fff; --text: #1c1e21; }
-        body { font-family: 'Segoe UI', Tahoma, Helvetica, Arial, sans-serif; background: var(--bg); margin: 0; color: var(--text); }
-        nav { background: var(--primary); color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        :root { --primary: #1877f2; --bg: #f0f2f5; --white: #fff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; }
+        nav { background: var(--primary); color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
         .container { max-width: 800px; margin: 15px auto; padding: 0 10px; }
         .card { background: var(--white); padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        
-        #chat-window { height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 15px; border: 1px solid #dddfe2; border-radius: 8px; background: #f9f9f9; margin-bottom: 10px; }
-        
+        #chat-window { height: 450px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 15px; border: 1px solid #dddfe2; border-radius: 8px; background: #f9f9f9; }
         .msg-wrapper { display: flex; flex-direction: column; width: 100%; }
         .msg { padding: 10px 15px; border-radius: 18px; max-width: 75%; font-size: 14px; word-wrap: break-word; line-height: 1.4; }
-        
         .my-msg-wrapper { align-items: flex-end; }
         .my-msg { background: var(--primary); color: white; border-bottom-right-radius: 4px; }
-        
         .other-msg-wrapper { align-items: flex-start; }
         .other-msg { background: #e4e6eb; color: #1c1e21; border-bottom-left-radius: 4px; }
-        
         .user-label { font-size: 11px; margin-bottom: 2px; color: #65676b; font-weight: bold; }
-        
+        .chat-img { max-width: 100%; border-radius: 10px; margin-top: 5px; cursor: pointer; border: 1px solid #ccc; }
         .input-area { display: flex; gap: 8px; align-items: center; padding: 10px; background: white; border-radius: 25px; border: 1px solid #ddd; }
-        #chat-input { flex: 1; border: none; outline: none; font-size: 15px; background: transparent; }
-        
-        .btn { border: none; background: none; color: var(--primary); cursor: pointer; font-weight: bold; padding: 5px 10px; }
-        .file-label { font-size: 20px; cursor: pointer; color: var(--primary); padding: 0 5px; }
-        
-        .status-dot { height: 10px; width: 10px; background-color: #42b72a; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        #chat-input { flex: 1; border: none; outline: none; font-size: 15px; }
     </style>
 </head>
 <body>
-    <nav>
-        <strong style="font-size: 1.2rem;">OJT Portal</strong>
-        <a href="index.html" onclick="localStorage.clear()" style="color:white; text-decoration:none; font-size: 14px; border: 1px solid white; padding: 4px 10px; border-radius: 4px;">Log Out</a>
-    </nav>
-
+    <nav><strong>OJT Dashboard</strong><a href="index.html" onclick="localStorage.clear()" style="color:white; text-decoration:none;">Log Out</a></nav>
     <div class="container">
         <div class="card">
-            <h3 style="margin: 0 0 5px 0;">Welcome, <span id="user-name">Student</span>!</h3>
-            <div style="font-size: 13px;">
-                <span class="status-dot"></span> Online Now: <span id="online-list" style="color:#42b72a; font-weight: bold;">Connecting...</span>
-            </div>
+            <h3 style="margin:0;">Hello, <span id="user-name">...</span>!</h3>
+            <p style="color:#42b72a; margin: 5px 0 0 0;">● Online: <span id="online-list">...</span></p>
         </div>
-
         <div class="card">
-            <div id="chat-window">
-                <div style="text-align:center; color:gray; margin-top:50px;">Initializing chat...</div>
-            </div>
-            
+            <div id="chat-window"></div>
             <div class="input-area">
-                <label class="file-label" title="Attach File">
-                    📎
-                    <input type="file" style="display:none;" onchange="uploadFile(this)">
-                </label>
-                <input type="text" id="chat-input" placeholder="Write a message..." onkeypress="if(event.key==='Enter') sendMsg()">
-                <button class="btn" onclick="sendMsg()" style="font-size: 1.2rem;">➤</button>
+                <label style="cursor:pointer; font-size:20px;">📎<input type="file" id="fileInput" style="display:none;" onchange="uploadFile(this)"></label>
+                <input type="text" id="chat-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMsg()">
+                <button onclick="sendMsg()" style="background:none; border:none; color:var(--primary); cursor:pointer; font-size:20px;">➤</button>
             </div>
         </div>
     </div>
 
     <script>
-        // CRITICAL: Ensure this matches your EXACT Google Apps Script Web App URL
-        const scriptURL = "https://script.google.com/macros/s/AKfycbwJcFtextFeGl1oF5N2HQyJKQyojR48Jphb6592E5AR9lR5h5r41ULNyIkmu53Mau71/exec";
+        const scriptURL = "REPLACE_WITH_YOUR_DEPLOYMENT_URL";
         const myName = localStorage.getItem("username") || "Guest";
         document.getElementById('user-name').innerText = myName;
 
+        function getDirectImgLink(url) {
+            if (url.includes("drive.google.com")) {
+                let fileId = "";
+                if (url.includes("id=")) { fileId = url.split("id=")[1]; }
+                else { fileId = url.split("/d/")[1].split("/")[0]; }
+                return `https://lh3.googleusercontent.com/d/${fileId}`;
+            }
+            return url;
+        }
+
         async function updateChat() {
             try {
-                // Fetch Online Users & Messages in parallel
                 const [uRes, mRes] = await Promise.all([
                     fetch(`${scriptURL}?action=getOnlineUsers`),
                     fetch(`${scriptURL}?action=getMessages`)
                 ]);
-                
                 const users = await uRes.json();
                 const msgs = await mRes.json();
                 
-                // Update Online List
-                document.getElementById('online-list').innerText = users.length > 0 ? users.join(', ') : "No one else online";
+                document.getElementById('online-list').innerText = users.join(', ');
                 
-                // Update Chat Window
                 const chatBox = document.getElementById('chat-window');
-                if (msgs.length === 0) {
-                    chatBox.innerHTML = "<div style='text-align:center; color:gray; margin-top:50px;'>No messages yet. Say hi!</div>";
-                } else {
-                    chatBox.innerHTML = msgs.map(m => {
-                        const isMe = m.user === myName;
-                        let textContent = m.text;
-                        
-                        // Basic Link/Image handling
-                        if (m.text.includes("http")) {
-                            textContent = `<a href="${m.text}" target="_blank" style="color:inherit; text-decoration:underline;">View Attachment</a>`;
-                        }
+                chatBox.innerHTML = msgs.map(m => {
+                    const isMe = m.user === myName;
+                    let content = m.text;
+                    
+                    if (m.text.includes("drive.google.com")) {
+                        const directImg = getDirectImgLink(m.text);
+                        content = `<img src="${directImg}" class="chat-img" onclick="window.open('${m.text}')" onerror="this.outerHTML='<a href=\'${m.text}\' target=\'_blank\'>View File</a>'">`;
+                    }
 
-                        return `
-                            <div class="msg-wrapper ${isMe ? 'my-msg-wrapper' : 'other-msg-wrapper'}">
-                                <span class="user-label">${isMe ? 'You' : m.user}</span>
-                                <div class="msg ${isMe ? 'my-msg' : 'other-msg'}">${textContent}</div>
-                            </div>`;
-                    }).join('');
-                }
+                    return `<div class="msg-wrapper ${isMe?'my-msg-wrapper':'other-msg-wrapper'}">
+                        <span class="user-label">${isMe?'You':m.user}</span>
+                        <div class="msg ${isMe?'my-msg':'other-msg'}">${content}</div>
+                    </div>`;
+                }).join('');
                 chatBox.scrollTop = chatBox.scrollHeight;
-            } catch(e) { 
-                console.error("Connection Error:", e);
-                document.getElementById('online-list').innerText = "Offline (Connection Error)";
-            }
+            } catch(e) { console.log("Refresh failed"); }
         }
 
         async function sendMsg() {
             const input = document.getElementById('chat-input');
             const text = input.value.trim();
             if(!text) return;
-            
-            input.value = ""; // Clear input immediately for better UX
-            
-            try {
-                await fetch(`${scriptURL}?action=sendMessage&username=${encodeURIComponent(myName)}&text=${encodeURIComponent(text)}`, {
-                    mode: 'no-cors' // Allows sending without preflight issues
-                });
-                // Small delay to let the sheet update before we refresh
-                setTimeout(updateChat, 800);
-            } catch (err) {
-                alert("Failed to send message. Check your internet.");
-                input.value = text;
-            }
+            input.value = "";
+            await fetch(`${scriptURL}?action=sendMessage&username=${encodeURIComponent(myName)}&text=${encodeURIComponent(text)}`, {mode:'no-cors'});
+            setTimeout(updateChat, 1000);
         }
 
         async function uploadFile(input) {
             const file = input.files[0];
             if (!file) return;
-            
-            const chatBox = document.getElementById('chat-window');
-            const originalHTML = chatBox.innerHTML;
-            chatBox.innerHTML += `<div style="text-align:center; color:blue; font-size:12px;">Uploading ${file.name}...</div>`;
-            
             const reader = new FileReader();
+            document.getElementById('chat-input').placeholder = "Uploading...";
+            
             reader.onload = async () => {
-                const params = new URLSearchParams({ 
-                    action: 'uploadFile', 
-                    username: myName, 
-                    fileName: file.name, 
-                    mimeType: file.type, 
-                    fileData: reader.result.split(',')[1] 
-                });
-                
-                try {
-                    await fetch(scriptURL, { method: 'POST', body: params, mode: 'no-cors' });
-                    setTimeout(updateChat, 2000);
-                } catch (err) {
-                    alert("Upload failed.");
-                    updateChat();
-                }
+                const base64 = reader.result.split(',')[1];
+                const payload = {
+                    action: 'uploadFile',
+                    username: myName,
+                    fileName: file.name,
+                    mimeType: file.type,
+                    fileData: base64
+                };
+                await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload) });
+                document.getElementById('chat-input').placeholder = "Type a message...";
+                setTimeout(updateChat, 2000);
             };
             reader.readAsDataURL(file);
         }
 
-        // Auto-refresh every 5 seconds
         setInterval(updateChat, 5000);
-        // Initial load
         updateChat();
     </script>
 </body>

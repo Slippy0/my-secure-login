@@ -11,16 +11,22 @@
         nav { background: var(--primary); color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
         .container { max-width: 800px; margin: 15px auto; padding: 0 10px; }
         .card { background: var(--white); padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        
         #chat-window { height: 450px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 15px; border: 1px solid #dddfe2; border-radius: 8px; background: #f9f9f9; }
+        
         .msg-wrapper { display: flex; flex-direction: column; width: 100%; }
         .msg { padding: 10px 15px; border-radius: 18px; max-width: 75%; font-size: 14px; position: relative; line-height: 1.4; word-wrap: break-word; }
+        
         .my-msg-wrapper { align-items: flex-end; }
         .my-msg { background: var(--primary); color: white; border-bottom-right-radius: 4px; }
         .my-label { color: var(--primary); font-weight: bold; font-size: 11px; margin-bottom: 2px; }
+
         .other-msg-wrapper { align-items: flex-start; }
         .other-msg { background: #e4e6eb; color: #1c1e21; border-bottom-left-radius: 4px; }
         .other-label { color: #65676b; font-weight: bold; font-size: 11px; margin-bottom: 2px; }
-        .media-content { max-width: 100%; border-radius: 10px; margin-top: 5px; display: block; }
+
+        .media-content { max-width: 100%; border-radius: 10px; margin-top: 5px; display: block; border: 1px solid #ddd; }
+        
         .input-area { display: flex; gap: 8px; align-items: center; padding: 10px; background: white; border-radius: 25px; border: 1px solid #ddd; margin-top: 10px; }
         #chat-input { flex: 1; border: none; outline: none; font-size: 15px; }
         .icon-btn { font-size: 20px; color: var(--primary); cursor: pointer; padding: 0 5px; }
@@ -53,33 +59,34 @@
     </div>
 
     <script>
-        // 1. IMPORTANT: Replace this with your URL from "New Deployment"
+        // REPLACE THIS URL WITH YOUR DEPLOYMENT URL
         const scriptURL = "https://script.google.com/macros/s/AKfycbwJcFtextFeGl1oF5N2HQyJKQyojR48Jphb6592E5AR9lR5h5r41ULNyIkmu53Mau71/exec";
         const myName = localStorage.getItem("username") || "Guest";
         document.getElementById('user-name').innerText = myName;
 
         async function updateChat() {
             try {
+                // Fetch Online Users
                 const uRes = await fetch(`${scriptURL}?action=getOnlineUsers`);
                 const users = await uRes.json();
                 document.getElementById('online-list').innerText = users.join(', ');
 
+                // Fetch Messages
                 const mRes = await fetch(`${scriptURL}?action=getMessages`);
                 const msgs = await mRes.json();
-                const windowDiv = document.getElementById('chat-window');
+                const chatBox = document.getElementById('chat-window');
                 
-                windowDiv.innerHTML = msgs.map(m => {
+                chatBox.innerHTML = msgs.map(m => {
                     const isMe = (m.user === myName);
                     let content = m.text;
 
-                    if (m.text.match(/\.(jpeg|jpg|gif|png)$/i) || m.text.includes("giphy.com")) {
+                    // Media Detection (Images)
+                    if (m.text.match(/\.(jpeg|jpg|gif|png)$/i)) {
                         content = `<img src="${m.text}" class="media-content">`;
-                    } else if (m.text.match(/\.(mp4|webm)$/i)) {
-                        content = `<video controls class="media-content"><source src="${m.text}"></video>`;
-                    } else if (m.text.includes("drive.google.com") || m.text.includes("http")) {
-                        if (!m.text.match(/\.(jpeg|jpg|gif|png|mp4|webm)$/i)) {
-                            content = `<a href="${m.text}" target="_blank" style="color:inherit;"><i class="fa-solid fa-file-arrow-down"></i> View Attachment</a>`;
-                        }
+                    } 
+                    // Link/File Detection
+                    else if (m.text.includes("http")) {
+                        content = `<a href="${m.text}" target="_blank" style="color:inherit; text-decoration:underline;"><i class="fa-solid fa-link"></i> View Attachment</a>`;
                     }
 
                     return `
@@ -88,8 +95,8 @@
                             <div class="msg ${isMe ? 'my-msg' : 'other-msg'}">${content}</div>
                         </div>`;
                 }).join('');
-                windowDiv.scrollTop = windowDiv.scrollHeight;
-            } catch(e) { console.error("Sync error"); }
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch(e) { console.error("Chat sync failed."); }
         }
 
         async function sendMsg() {
@@ -97,15 +104,13 @@
             if (!input.value.trim()) return;
             const text = input.value;
             input.value = "";
-            input.placeholder = "Sending...";
 
             await fetch(`${scriptURL}?action=sendMessage&username=${encodeURIComponent(myName)}&text=${encodeURIComponent(text)}`, {
                 method: 'GET',
                 mode: 'no-cors'
             });
 
-            input.placeholder = "Type a message...";
-            setTimeout(updateChat, 1000);
+            setTimeout(updateChat, 1000); 
         }
 
         async function uploadFile(input) {
@@ -133,7 +138,7 @@
                 });
                 
                 inputField.placeholder = "Type a message...";
-                setTimeout(updateChat, 2500); 
+                setTimeout(updateChat, 2000); 
             };
             reader.readAsDataURL(file);
         }

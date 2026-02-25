@@ -6,53 +6,50 @@
     <title>OJT Dashboard</title>
     <style>
         :root { --primary: #1877f2; --bg: #f0f2f5; --white: #fff; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
-        nav { background: var(--primary); color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; margin-bottom: 20px; }
-        .card { background: var(--white); padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        #chat-window { height: 450px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 15px; border: 1px solid #dddfe2; border-radius: 8px; background: #f9f9f9; }
-        .msg-wrapper { display: flex; flex-direction: column; }
-        .msg { padding: 10px 16px; border-radius: 18px; max-width: 75%; font-size: 14px; word-wrap: break-word; background: #e4e6eb; position: relative; }
-        .my-msg-wrapper { align-items: flex-end; }
-        .my-msg { background: var(--primary); color: white; }
-        .chat-img { max-width: 100%; border-radius: 10px; margin-top: 8px; cursor: pointer; display: block; border: 1px solid #ddd; }
-        .input-area { display: flex; gap: 10px; padding: 12px; background: white; border-radius: 30px; border: 1px solid #ddd; align-items: center; }
-        #chat-input { flex: 1; border: none; outline: none; font-size: 16px; background: transparent; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; }
+        nav { background: var(--primary); color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; margin-bottom: 15px; }
+        .card { background: var(--white); padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        #chat-window { height: 450px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 15px; border: 1px solid #dddfe2; border-radius: 8px; background: #f9f9f9; }
+        .msg { padding: 10px 14px; border-radius: 18px; max-width: 80%; font-size: 14px; word-wrap: break-word; background: #e4e6eb; }
+        .my-msg { background: var(--primary); color: white; align-self: flex-end; }
+        .chat-img { max-width: 100%; border-radius: 10px; margin-top: 5px; cursor: pointer; display: block; border: 1px solid #ddd; }
+        .input-area { display: flex; gap: 8px; padding: 10px; background: white; border-radius: 25px; border: 1px solid #ddd; align-items: center; }
+        #chat-input { flex: 1; border: none; outline: none; font-size: 15px; background: transparent; }
         .btn { cursor: pointer; border: none; background: none; font-size: 20px; color: var(--primary); }
     </style>
 </head>
 <body>
-    <nav><strong>OJT Dashboard</strong> <a href="index.html" onclick="localStorage.clear()" style="color:white; text-decoration:none; font-size:12px; border:1px solid white; padding: 5px 10px; border-radius: 4px;">Logout</a></nav>
-    
+    <nav><strong>OJT Portal</strong> <a href="index.html" onclick="localStorage.clear()" style="color:white; text-decoration:none; font-size:12px;">Logout</a></nav>
     <div class="card">
-        <h2 style="margin:0;">Welcome, <span id="user-name">...</span>!</h2>
-        <small id="online-list" style="color:#42b72a; font-weight:bold;">● Checking Connection...</small>
+        <h3 style="margin:0;">Hi, <span id="user-name">...</span></h3>
+        <small id="status" style="color:gray;">Connecting...</small>
     </div>
-
     <div class="card">
-        <div id="chat-window">Connecting to Server...</div>
+        <div id="chat-window">Waiting for server...</div>
         <div style="margin-top:15px;" class="input-area">
-            <label class="btn" title="Upload Image">📎<input type="file" id="fileIn" style="display:none;" onchange="uploadFile(this)" accept="image/*"></label>
-            <input type="text" id="chat-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMsg()">
+            <label class="btn">📎<input type="file" id="fileIn" style="display:none;" onchange="uploadFile(this)" accept="image/*"></label>
+            <input type="text" id="chat-input" placeholder="Message..." onkeypress="if(event.key==='Enter') sendMsg()">
             <button class="btn" onclick="sendMsg()">➤</button>
         </div>
     </div>
 
     <script>
-        const scriptURL = "PASTE_YOUR_NEW_DEPLOYMENT_URL_HERE"; 
-        const myName = localStorage.getItem("username") || "Guest";
+        const scriptURL = "REPLACE_WITH_YOUR_NEW_DEPLOY_URL"; 
+        const myName = localStorage.getItem("username") || "User";
         document.getElementById('user-name').innerText = myName;
 
         async function updateChat() {
             try {
-                const [uRes, mRes] = await Promise.all([
-                    fetch(`${scriptURL}?action=getOnlineUsers`),
-                    fetch(`${scriptURL}?action=getMessages`)
+                const [mRes, uRes] = await Promise.all([
+                    fetch(`${scriptURL}?action=getMessages`),
+                    fetch(`${scriptURL}?action=getOnlineUsers`)
                 ]);
-                const users = await uRes.json();
                 const msgs = await mRes.json();
+                const users = await uRes.json();
                 
-                document.getElementById('online-list').innerText = "● Online: " + users.join(', ');
-                
+                document.getElementById('status').innerText = "Online: " + users.join(', ');
+                document.getElementById('status').style.color = "#42b72a";
+
                 const chatBox = document.getElementById('chat-window');
                 chatBox.innerHTML = msgs.map(m => {
                     const isMe = m.user === myName;
@@ -60,21 +57,21 @@
                     if (m.text.includes("google.com")) {
                         content = `<img src="${m.text}" class="chat-img" onclick="window.open('${m.text}')">`;
                     }
-                    return `<div class="msg-wrapper ${isMe?'my-msg-wrapper':''}">
-                        <small style="font-size:11px; color:gray; margin:0 5px;">${isMe?'You':m.user}</small>
+                    return `<div style="display:flex; flex-direction:column; ${isMe?'align-items:flex-end':''}">
+                        <small style="font-size:10px; color:gray; margin:0 5px;">${m.user}</small>
                         <div class="msg ${isMe?'my-msg':''}">${content}</div>
                     </div>`;
                 }).join('');
                 chatBox.scrollTop = chatBox.scrollHeight;
             } catch(e) { 
-                document.getElementById('chat-window').innerHTML = "<div style='text-align:center; padding:20px; color:red;'><b>Connection Blocked</b><br>1. Click the 'Dangerous' badge (top left)<br>2. Go to Site Settings<br>3. Set 'Insecure Content' to ALLOW<br>4. Refresh this page</div>";
+                document.getElementById('chat-window').innerHTML = "<div style='color:red; text-align:center;'><b>Blocked by Browser</b><br>Please click the 'Dangerous' badge and allow Insecure Content.</div>";
             }
         }
 
         async function sendMsg() {
             const input = document.getElementById('chat-input');
-            const text = input.value.trim();
-            if(!text) return;
+            if(!input.value.trim()) return;
+            const text = input.value;
             input.value = "";
             await fetch(`${scriptURL}?action=sendMessage&username=${encodeURIComponent(myName)}&text=${encodeURIComponent(text)}`, {mode:'no-cors'});
             setTimeout(updateChat, 1000);
@@ -83,16 +80,10 @@
         async function uploadFile(input) {
             const file = input.files[0];
             if (!file) return;
-            const chatInput = document.getElementById('chat-input');
-            chatInput.placeholder = "Uploading...";
-            chatInput.disabled = true;
-
             const reader = new FileReader();
             reader.onload = async () => {
                 const payload = { action: 'uploadFile', username: myName, fileName: file.name, mimeType: file.type, fileData: reader.result.split(',')[1] };
                 await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' });
-                chatInput.placeholder = "Type a message...";
-                chatInput.disabled = false;
                 setTimeout(updateChat, 2000);
             };
             reader.readAsDataURL(file);

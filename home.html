@@ -1,123 +1,98 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OJT Dashboard</title>
-    <style>
-        :root { --primary: #1877f2; --bg: #f0f2f5; --white: #fff; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; }
-        nav { background: var(--primary); color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
-        .container { max-width: 800px; margin: 15px auto; padding: 0 10px; }
-        .card { background: var(--white); padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        #chat-window { height: 450px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 15px; border: 1px solid #dddfe2; border-radius: 8px; background: #f9f9f9; }
-        .msg-wrapper { display: flex; flex-direction: column; width: 100%; }
-        .msg { padding: 10px 15px; border-radius: 18px; max-width: 75%; font-size: 14px; word-wrap: break-word; line-height: 1.4; }
-        .my-msg-wrapper { align-items: flex-end; }
-        .my-msg { background: var(--primary); color: white; border-bottom-right-radius: 4px; }
-        .other-msg-wrapper { align-items: flex-start; }
-        .other-msg { background: #e4e6eb; color: #1c1e21; border-bottom-left-radius: 4px; }
-        .user-label { font-size: 11px; margin-bottom: 2px; color: #65676b; font-weight: bold; }
-        .chat-img { max-width: 100%; border-radius: 10px; margin-top: 5px; cursor: pointer; border: 1px solid #ccc; }
-        .input-area { display: flex; gap: 8px; align-items: center; padding: 10px; background: white; border-radius: 25px; border: 1px solid #ddd; }
-        #chat-input { flex: 1; border: none; outline: none; font-size: 15px; }
-    </style>
-</head>
-<body>
-    <nav><strong>OJT Dashboard</strong><a href="index.html" onclick="localStorage.clear()" style="color:white; text-decoration:none;">Log Out</a></nav>
-    <div class="container">
-        <div class="card">
-            <h3 style="margin:0;">Hello, <span id="user-name">...</span>!</h3>
-            <p style="color:#42b72a; margin: 5px 0 0 0;">● Online: <span id="online-list">...</span></p>
-        </div>
-        <div class="card">
-            <div id="chat-window"></div>
-            <div class="input-area">
-                <label style="cursor:pointer; font-size:20px;">📎<input type="file" id="fileInput" style="display:none;" onchange="uploadFile(this)"></label>
-                <input type="text" id="chat-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMsg()">
-                <button onclick="sendMsg()" style="background:none; border:none; color:var(--primary); cursor:pointer; font-size:20px;">➤</button>
-            </div>
-        </div>
-    </div>
+<script>
+    const scriptURL = "YOUR_NEW_DEPLOYMENT_URL_HERE";
+    const myName = localStorage.getItem("username") || "Guest";
+    document.getElementById('user-name').innerText = myName;
 
-    <script>
-        const scriptURL = "REPLACE_WITH_YOUR_DEPLOYMENT_URL";
-        const myName = localStorage.getItem("username") || "Guest";
-        document.getElementById('user-name').innerText = myName;
-
-        function getDirectImgLink(url) {
-            if (url.includes("drive.google.com")) {
-                let fileId = "";
-                if (url.includes("id=")) { fileId = url.split("id=")[1]; }
-                else { fileId = url.split("/d/")[1].split("/")[0]; }
-                return `https://lh3.googleusercontent.com/d/${fileId}`;
-            }
-            return url;
+    // Helper to turn Google Drive links into direct images
+    function getImg(url) {
+        if (url.includes("drive.google.com")) {
+            const id = url.split('id=')[1] || url.split('/d/')[1].split('/')[0];
+            return `https://lh3.googleusercontent.com/u/0/d/${id}`;
         }
+        return url;
+    }
 
-        async function updateChat() {
-            try {
-                const [uRes, mRes] = await Promise.all([
-                    fetch(`${scriptURL}?action=getOnlineUsers`),
-                    fetch(`${scriptURL}?action=getMessages`)
-                ]);
-                const users = await uRes.json();
-                const msgs = await mRes.json();
-                
-                document.getElementById('online-list').innerText = users.join(', ');
-                
-                const chatBox = document.getElementById('chat-window');
-                chatBox.innerHTML = msgs.map(m => {
-                    const isMe = m.user === myName;
-                    let content = m.text;
-                    
-                    if (m.text.includes("drive.google.com")) {
-                        const directImg = getDirectImgLink(m.text);
-                        content = `<img src="${directImg}" class="chat-img" onclick="window.open('${m.text}')" onerror="this.outerHTML='<a href=\'${m.text}\' target=\'_blank\'>View File</a>'">`;
-                    }
-
-                    return `<div class="msg-wrapper ${isMe?'my-msg-wrapper':'other-msg-wrapper'}">
-                        <span class="user-label">${isMe?'You':m.user}</span>
-                        <div class="msg ${isMe?'my-msg':'other-msg'}">${content}</div>
-                    </div>`;
-                }).join('');
-                chatBox.scrollTop = chatBox.scrollHeight;
-            } catch(e) { console.log("Refresh failed"); }
-        }
-
-        async function sendMsg() {
-            const input = document.getElementById('chat-input');
-            const text = input.value.trim();
-            if(!text) return;
-            input.value = "";
-            await fetch(`${scriptURL}?action=sendMessage&username=${encodeURIComponent(myName)}&text=${encodeURIComponent(text)}`, {mode:'no-cors'});
-            setTimeout(updateChat, 1000);
-        }
-
-        async function uploadFile(input) {
-            const file = input.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            document.getElementById('chat-input').placeholder = "Uploading...";
+    async function updateChat() {
+        try {
+            const [uRes, mRes] = await Promise.all([
+                fetch(`${scriptURL}?action=getOnlineUsers`),
+                fetch(`${scriptURL}?action=getMessages`)
+            ]);
+            const users = await uRes.json();
+            const msgs = await mRes.json();
             
-            reader.onload = async () => {
-                const base64 = reader.result.split(',')[1];
-                const payload = {
-                    action: 'uploadFile',
-                    username: myName,
-                    fileName: file.name,
-                    mimeType: file.type,
-                    fileData: base64
-                };
-                await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload) });
-                document.getElementById('chat-input').placeholder = "Type a message...";
-                setTimeout(updateChat, 2000);
-            };
-            reader.readAsDataURL(file);
-        }
+            document.getElementById('online-list').innerText = users.join(', ');
+            
+            const chatBox = document.getElementById('chat-window');
+            chatBox.innerHTML = msgs.map(m => {
+                const isMe = m.user === myName;
+                let content = m.text;
+                
+                if (m.text.includes("drive.google.com")) {
+                    content = `<img src="${getImg(m.text)}" class="chat-img" onclick="window.open('${m.text}')" 
+                               onerror="this.outerHTML='<a href=\'${m.text}\' target=\'_blank\'>View Attachment</a>'">`;
+                }
 
-        setInterval(updateChat, 5000);
-        updateChat();
-    </script>
-</body>
-</html>
+                return `<div class="msg-wrapper ${isMe?'my-msg-wrapper':'other-msg-wrapper'}">
+                    <span class="user-label">${isMe?'You':m.user}</span>
+                    <div class="msg ${isMe?'my-msg':'other-msg'}">${content}</div>
+                </div>`;
+            }).join('');
+            chatBox.scrollTop = chatBox.scrollHeight;
+        } catch(e) { console.log("Refresh failed"); }
+    }
+
+    async function uploadFile(input) {
+        const file = input.files[0];
+        if (!file) return;
+        
+        const chatInput = document.getElementById('chat-input');
+        chatInput.disabled = true;
+        chatInput.placeholder = "Uploading " + file.name + "...";
+
+        const reader = new FileReader();
+        reader.onload = async () => {
+            const base64 = reader.result.split(',')[1];
+            const payload = {
+                action: 'uploadFile',
+                username: myName,
+                fileName: file.name,
+                mimeType: file.type,
+                fileData: base64
+            };
+
+            try {
+                // Send as POST JSON
+                await fetch(scriptURL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Critical for GitHub Pages to Apps Script
+                    cache: 'no-cache',
+                    body: JSON.stringify(payload)
+                });
+                
+                chatInput.disabled = false;
+                chatInput.placeholder = "Sent! Refreshing...";
+                setTimeout(() => {
+                    chatInput.placeholder = "Type a message...";
+                    updateChat();
+                }, 2500);
+            } catch (err) {
+                alert("Upload failed. Check console.");
+                chatInput.disabled = false;
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async function sendMsg() {
+        const input = document.getElementById('chat-input');
+        if(!input.value.trim() || input.disabled) return;
+        const text = input.value;
+        input.value = "";
+        await fetch(`${scriptURL}?action=sendMessage&username=${encodeURIComponent(myName)}&text=${encodeURIComponent(text)}`, {mode:'no-cors'});
+        setTimeout(updateChat, 1000);
+    }
+
+    setInterval(updateChat, 5000);
+    updateChat();
+</script>

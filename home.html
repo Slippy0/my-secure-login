@@ -5,37 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OJT Dashboard</title>
     <style>
-        :root { --primary: #1877f2; --bg: #f0f2f5; --white: #fff; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; }
+        :root { --primary: #1877f2; --bg: #f0f2f5; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 15px; }
         nav { background: var(--primary); color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; margin-bottom: 15px; }
-        .card { background: var(--white); padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 15px; }
-        #chat-window { height: 450px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 15px; border: 1px solid #dddfe2; border-radius: 8px; background: #f9f9f9; }
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        #chat-window { height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 15px; border: 1px solid #dddfe2; border-radius: 8px; background: #f9f9f9; }
         .msg { padding: 10px 14px; border-radius: 18px; max-width: 80%; font-size: 14px; word-wrap: break-word; background: #e4e6eb; }
         .my-msg { background: var(--primary); color: white; align-self: flex-end; }
         .chat-img { max-width: 100%; border-radius: 10px; margin-top: 5px; cursor: pointer; display: block; border: 1px solid #ddd; }
-        .input-area { display: flex; gap: 8px; padding: 10px; background: white; border-radius: 25px; border: 1px solid #ddd; align-items: center; }
+        .input-area { display: flex; gap: 10px; padding: 10px; background: white; border-radius: 25px; border: 1px solid #ddd; align-items: center; margin-top: 10px; }
         #chat-input { flex: 1; border: none; outline: none; font-size: 15px; background: transparent; }
         .btn { cursor: pointer; border: none; background: none; font-size: 20px; color: var(--primary); }
     </style>
 </head>
 <body>
-    <nav><strong>OJT Portal</strong> <a href="index.html" onclick="localStorage.clear()" style="color:white; text-decoration:none; font-size:12px;">Logout</a></nav>
+    <nav><strong>OJT Dashboard</strong> <a href="index.html" onclick="localStorage.clear()" style="color:white; text-decoration:none; font-size:12px;">Logout</a></nav>
     <div class="card">
         <h3 style="margin:0;">Hi, <span id="user-name">...</span></h3>
-        <small id="status" style="color:gray;">Connecting...</small>
+        <small id="status" style="color:gray;">Checking connection...</small>
     </div>
     <div class="card">
-        <div id="chat-window">Waiting for server...</div>
-        <div style="margin-top:15px;" class="input-area">
+        <div id="chat-window">Loading Chat...</div>
+        <div class="input-area">
             <label class="btn">📎<input type="file" id="fileIn" style="display:none;" onchange="uploadFile(this)" accept="image/*"></label>
-            <input type="text" id="chat-input" placeholder="Message..." onkeypress="if(event.key==='Enter') sendMsg()">
+            <input type="text" id="chat-input" placeholder="Aa" onkeypress="if(event.key==='Enter') sendMsg()">
             <button class="btn" onclick="sendMsg()">➤</button>
         </div>
     </div>
 
     <script>
-        const scriptURL = "REPLACE_WITH_YOUR_NEW_DEPLOY_URL"; 
-        const myName = localStorage.getItem("username") || "User";
+        const scriptURL = "PASTE_YOUR_NEW_URL_HERE"; 
+        const myName = localStorage.getItem("username") || "Guest";
         document.getElementById('user-name').innerText = myName;
 
         async function updateChat() {
@@ -47,7 +47,7 @@
                 const msgs = await mRes.json();
                 const users = await uRes.json();
                 
-                document.getElementById('status').innerText = "Online: " + users.join(', ');
+                document.getElementById('status').innerText = "● Online: " + users.join(', ');
                 document.getElementById('status').style.color = "#42b72a";
 
                 const chatBox = document.getElementById('chat-window');
@@ -64,7 +64,7 @@
                 }).join('');
                 chatBox.scrollTop = chatBox.scrollHeight;
             } catch(e) { 
-                document.getElementById('chat-window').innerHTML = "<div style='color:red; text-align:center;'><b>Blocked by Browser</b><br>Please click the 'Dangerous' badge and allow Insecure Content.</div>";
+                document.getElementById('chat-window').innerHTML = "<div style='color:red; text-align:center;'><b>Blocked by Browser</b><br>Click the 'Dangerous' badge and select 'Visit this unsafe site'.</div>";
             }
         }
 

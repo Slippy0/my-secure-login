@@ -1,70 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>OJT Portal</title>
+    <meta charset="UTF-8">
+    <title>OJT Dashboard</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
-        .chat-card { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        #chat-window { height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 15px; margin: 10px 0; display: flex; flex-direction: column; gap: 10px; background: #fff; }
-        .msg { padding: 8px 12px; border-radius: 15px; background: #e4e6eb; width: fit-content; max-width: 85%; font-size: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .my-msg { background: #0084ff; color: white; align-self: flex-end; }
-        .u-name { font-size: 10px; font-weight: bold; color: #65676b; margin-bottom: 2px; }
-        .my-msg .u-name { color: #d0e8ff; text-align: right; }
-        .input-box { display: flex; gap: 10px; }
-        input { flex: 1; padding: 12px; border-radius: 20px; border: 1px solid #ccc; outline: none; }
-        button { background: #0084ff; color: white; border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .chat-container { width: 100%; max-width: 450px; background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; }
+        .header { background: #007bff; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        #chat-window { height: 400px; overflow-y: auto; padding: 15px; background: #fafafa; display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 10px 14px; border-radius: 18px; font-size: 14px; max-width: 80%; position: relative; }
+        .msg-other { background: #e9e9eb; align-self: flex-start; color: #333; }
+        .msg-me { background: #007bff; align-self: flex-end; color: white; }
+        .u-name { font-size: 10px; font-weight: bold; margin-bottom: 3px; display: block; opacity: 0.8; }
+        .input-area { padding: 15px; border-top: 1px solid #eee; display: flex; gap: 10px; }
+        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
+        button { background: #007bff; color: white; border: none; padding: 0 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        #status-bar { font-size: 11px; padding: 5px 15px; background: #eee; color: #666; }
     </style>
 </head>
 <body>
-    <div class="chat-card">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <strong>Hi, <span id="display-user" style="color:#0084ff;">...</span></strong>
-            <a href="index.html" onclick="localStorage.clear()" style="font-size:12px; color:gray; text-decoration:none;">Logout</a>
+    <div class="chat-container">
+        <div class="header">
+            <span>Hi, <b id="display-name">User</b></span>
+            <button onclick="logout()" style="background:transparent; border:1px solid white; font-size:10px; padding: 4px 8px;">Logout</button>
         </div>
+        <div id="status-bar">Checking connection...</div>
         <div id="chat-window">Loading messages...</div>
-        <div class="input-box">
+        <div class="input-area">
             <input type="text" id="chat-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') send()">
             <button onclick="send()">Send</button>
         </div>
     </div>
 
     <script>
-        // PASTE YOUR NEW DEPLOYMENT URL HERE
         const scriptURL = "https://script.google.com/macros/s/AKfycbwJcFtextFeGl1oF5N2HQyJKQyojR48Jphb6592E5AR9lR5h5r41ULNyIkmu53Mau71/exec";
-        const myUser = localStorage.getItem("username") || "Guest";
-        document.getElementById('display-user').innerText = myUser;
+        const myName = localStorage.getItem("username") || "Guest";
+        document.getElementById('display-name').innerText = myName;
 
-        async function load() {
+        function logout() { localStorage.clear(); window.location.href = "index.html"; }
+
+        async function loadMessages() {
             try {
-                const r = await fetch(`${scriptURL}?action=getMessages`);
-                const data = await r.json();
-                const window = document.getElementById('chat-window');
-                
-                window.innerHTML = data.map(m => `
-                    <div class="msg ${m.user === myUser ? 'my-msg' : ''}">
-                        <div class="u-name">${m.user}</div>
-                        <div class="msg-text">${m.text}</div>
-                    </div>
-                `).join('');
-                window.scrollTop = window.scrollHeight;
-            } catch(e) {
-                console.log("Connection error. Check the 'Dangerous' badge if it persists.");
+                const response = await fetch(`${scriptURL}?action=getMessages`);
+                const data = await response.json();
+                const windowEl = document.getElementById('chat-window');
+                document.getElementById('status-bar').innerText = "Connected ● Online";
+                document.getElementById('status-bar').style.color = "green";
+
+                windowEl.innerHTML = data.map(m => {
+                    const isMe = m.user === myName;
+                    return `
+                        <div class="msg ${isMe ? 'msg-me' : 'msg-other'}">
+                            <span class="u-name">${m.user}</span>
+                            <div>${m.text}</div>
+                        </div>
+                    `;
+                }).join('');
+                windowEl.scrollTop = windowEl.scrollHeight;
+            } catch (e) {
+                document.getElementById('status-bar').innerText = "Blocked by Browser. Click 'Dangerous' badge to allow.";
+                document.getElementById('status-bar').style.color = "red";
             }
         }
 
         async function send() {
-            const el = document.getElementById('chat-input');
-            const val = el.value.trim();
-            if(!val) return;
-            el.value = "";
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if(!msg) return;
+            input.value = "";
             
-            // Sending with no-cors to bypass the browser's security warning
-            await fetch(`${scriptURL}?action=sendMessage&username=${encodeURIComponent(myUser)}&text=${encodeURIComponent(val)}`, {mode: 'no-cors'});
-            setTimeout(load, 800);
+            // mode: 'no-cors' lets the message go through even if the browser warns about security
+            await fetch(`${scriptURL}?action=sendMessage&username=${encodeURIComponent(myName)}&text=${encodeURIComponent(msg)}`, { mode: 'no-cors' });
+            setTimeout(loadMessages, 500);
         }
 
-        setInterval(load, 3000);
-        load();
+        setInterval(loadMessages, 4000);
+        loadMessages();
     </script>
 </body>
 </html>

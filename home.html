@@ -6,9 +6,11 @@
     <style>
         :root { --sidebar: #111827; --primary: #3b82f6; --bg: #f3f4f6; }
         * { box-sizing: border-box; }
-        body { font-family: sans-serif; margin: 0; display: flex; height: 100vh; background: var(--bg); overflow: hidden; }
+        
+        /* THE FIX: Ensure body and main-chat don't exceed screen height */
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; font-family: sans-serif; }
+        body { display: flex; background: var(--bg); }
 
-        /* Sidebar - Sliding Logic */
         .sidebar { 
             width: 280px; background: var(--sidebar); color: white; display: flex; 
             flex-direction: column; padding: 20px; transition: 0.3s; z-index: 1000;
@@ -19,16 +21,16 @@
             .sidebar.open { left: 0; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
         }
 
-        /* Main Chat Area - Forces height to fit screen */
+        /* THE FIX: main-chat must be exactly 100% height and flex column */
         .main-chat { 
             flex: 1; display: flex; flex-direction: column; background: white; 
-            width: 100%; height: 100vh; position: relative; 
+            height: 100%; width: 100%; position: relative; overflow: hidden;
         }
 
         .chat-header { 
-            padding: 15px; border-bottom: 1px solid #eee; display: flex; 
+            flex: 0 0 60px; /* Fixed height header */
+            padding: 0 15px; border-bottom: 1px solid #eee; display: flex; 
             align-items: center; gap: 10px; font-weight: bold; background: white;
-            height: 60px;
         }
 
         .menu-toggle { 
@@ -37,30 +39,31 @@
         }
         @media (max-width: 768px) { .menu-toggle { display: block; } }
 
-        /* Chat Window - Added padding-bottom so messages aren't hidden by the input */
+        /* THE FIX: chat-window uses flex: 1 to fill middle space only */
         #chat-window { 
             flex: 1; padding: 15px; overflow-y: auto; display: flex; 
             flex-direction: column; gap: 10px; background: #f9fafb;
-            padding-bottom: 80px; 
         }
 
-        .msg { padding: 10px 14px; border-radius: 15px; max-width: 85%; font-size: 0.95rem; }
+        .msg { padding: 10px 14px; border-radius: 15px; max-width: 85%; font-size: 0.95rem; line-height: 1.4; }
         .msg.me { align-self: flex-end; background: var(--primary); color: white; }
         .msg.them { align-self: flex-start; background: #e5e7eb; color: black; }
 
-        /* FIXED INPUT AREA - This ensures it stays visible at the bottom */
+        /* THE FIX: input-area stays at the bottom within the flex container */
         .input-area { 
-            position: absolute; bottom: 0; left: 0; right: 0;
-            padding: 12px; border-top: 1px solid #eee; display: flex; 
-            gap: 8px; background: white; z-index: 5;
+            flex: 0 0 70px; /* Fixed height input area */
+            padding: 10px; border-top: 1px solid #eee; display: flex; 
+            gap: 8px; background: white; align-items: center;
         }
+        
         #msg-input { 
             flex: 1; padding: 12px; border: 1px solid #ddd; 
-            border-radius: 20px; outline: none; font-size: 16px; /* 16px prevents iOS zoom */
+            border-radius: 20px; outline: none; font-size: 16px; 
         }
+        
         .btn-send { 
             background: var(--primary); color: white; border: none; 
-            padding: 0 20px; border-radius: 20px; cursor: pointer; font-weight: bold;
+            padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold;
         }
 
         /* Sidebar Elements */
@@ -68,7 +71,7 @@
         input#user-search { flex: 1; padding: 10px; border-radius: 6px; border: none; background: #1f2937; color: white; width: 100%; }
         .btn-find { background: #0ea5e9; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
         .friends-list { flex: 1; overflow-y: auto; }
-        .friend-item { padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .friend-item { padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; font-size: 0.9rem;}
         .friend-item.active { background: #1f2937; }
         .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
         .logout-btn { margin-top: 10px; background: #ef4444; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; width: 100%; }

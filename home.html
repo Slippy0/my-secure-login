@@ -6,67 +6,24 @@
     <style>
         :root { --sidebar: #111827; --primary: #3b82f6; --bg: #f3f4f6; }
         * { box-sizing: border-box; }
-        
-        /* THE FIX: Ensure body and main-chat don't exceed screen height */
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; font-family: sans-serif; }
         body { display: flex; background: var(--bg); }
-
-        .sidebar { 
-            width: 280px; background: var(--sidebar); color: white; display: flex; 
-            flex-direction: column; padding: 20px; transition: 0.3s; z-index: 1000;
-        }
-
+        .sidebar { width: 280px; background: var(--sidebar); color: white; display: flex; flex-direction: column; padding: 20px; transition: 0.3s; z-index: 1000; }
         @media (max-width: 768px) {
             .sidebar { position: fixed; left: -280px; height: 100%; }
             .sidebar.open { left: 0; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
         }
-
-        /* THE FIX: main-chat must be exactly 100% height and flex column */
-        .main-chat { 
-            flex: 1; display: flex; flex-direction: column; background: white; 
-            height: 100%; width: 100%; position: relative; overflow: hidden;
-        }
-
-        .chat-header { 
-            flex: 0 0 60px; /* Fixed height header */
-            padding: 0 15px; border-bottom: 1px solid #eee; display: flex; 
-            align-items: center; gap: 10px; font-weight: bold; background: white;
-        }
-
-        .menu-toggle { 
-            display: none; background: #eee; border: none; padding: 8px 12px; 
-            border-radius: 6px; cursor: pointer; font-size: 1.2rem;
-        }
+        .main-chat { flex: 1; display: flex; flex-direction: column; background: white; height: 100%; width: 100%; position: relative; overflow: hidden; }
+        .chat-header { flex: 0 0 60px; padding: 0 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px; font-weight: bold; background: white; }
+        .menu-toggle { display: none; background: #eee; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 1.2rem; }
         @media (max-width: 768px) { .menu-toggle { display: block; } }
-
-        /* THE FIX: chat-window uses flex: 1 to fill middle space only */
-        #chat-window { 
-            flex: 1; padding: 15px; overflow-y: auto; display: flex; 
-            flex-direction: column; gap: 10px; background: #f9fafb;
-        }
-
+        #chat-window { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f9fafb; }
         .msg { padding: 10px 14px; border-radius: 15px; max-width: 85%; font-size: 0.95rem; line-height: 1.4; }
         .msg.me { align-self: flex-end; background: var(--primary); color: white; }
         .msg.them { align-self: flex-start; background: #e5e7eb; color: black; }
-
-        /* THE FIX: input-area stays at the bottom within the flex container */
-        .input-area { 
-            flex: 0 0 70px; /* Fixed height input area */
-            padding: 10px; border-top: 1px solid #eee; display: flex; 
-            gap: 8px; background: white; align-items: center;
-        }
-        
-        #msg-input { 
-            flex: 1; padding: 12px; border: 1px solid #ddd; 
-            border-radius: 20px; outline: none; font-size: 16px; 
-        }
-        
-        .btn-send { 
-            background: var(--primary); color: white; border: none; 
-            padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold;
-        }
-
-        /* Sidebar Elements */
+        .input-area { flex: 0 0 70px; padding: 10px; border-top: 1px solid #eee; display: flex; gap: 8px; background: white; align-items: center; }
+        #msg-input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 20px; outline: none; font-size: 16px; }
+        .btn-send { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
         .search-box { display: flex; gap: 5px; margin-bottom: 15px; }
         input#user-search { flex: 1; padding: 10px; border-radius: 6px; border: none; background: #1f2937; color: white; width: 100%; }
         .btn-find { background: #0ea5e9; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
@@ -110,7 +67,7 @@
     </div>
 
 <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbxqHFa-SUSDC7uE3nJBdYSG2lhtuQb2FaVpybW2yT4gBoFdGGVyYAIQvTGEdJPv8rUU/exec";
+    const scriptURL = "PASTE_YOUR_SCRIPT_URL_HERE";
     const myName = localStorage.getItem("username") || "Guest";
     document.getElementById('my-name').innerText = myName;
     let activeFriend = null;
@@ -120,13 +77,12 @@
 
     function apiCall(params, callback) {
         const script = document.createElement('script');
-        // Added timestamp to prevent browser caching
         script.src = `${scriptURL}?${params}&callback=${callback}&me=${encodeURIComponent(myName)}&t=${Date.now()}`;
         document.body.appendChild(script);
-        // Script removal moved inside a timeout to ensure it executes
         setTimeout(() => { if(script.parentNode) document.body.removeChild(script); }, 1500);
     }
 
+    // SEARCH LOGIC
     function doSearch() {
         const q = document.getElementById('user-search').value.trim();
         if(!q) return;
@@ -136,15 +92,13 @@
     window.renderSearch = function(users) {
         const resBox = document.getElementById('search-results');
         if(!users || users.length === 0) {
-            resBox.innerHTML = '<div style="color:gray;padding:10px;font-size:0.8rem">No users found</div>';
+            resBox.innerHTML = '<div style="color:gray;padding:10px;font-size:0.8rem">Not found</div>';
             return;
         }
-        // FIXED: Ensure the Add button triggers addFriend and clears search
         resBox.innerHTML = users.map(u => `
             <div class="friend-item" style="background:#1f2937; margin-bottom:5px;">
                 <span>${u.name}</span>
-                <span style="color:#38bdf8; margin-left:auto; cursor:pointer; font-weight:bold;" 
-                      onclick="addFriend('${u.name}')">+ Add</span>
+                <span style="color:#38bdf8; margin-left:auto; cursor:pointer;" onclick="addFriend('${u.name}')">+ Add</span>
             </div>`).join('');
     };
 
@@ -152,14 +106,14 @@
         apiCall(`action=addFriend&friend=${encodeURIComponent(name)}`, "afterAdd"); 
     };
 
-    // Added feedback so you know the request was sent
-    window.afterAdd = function(res) {
+    window.afterAdd = function() {
         alert("Request Sent!");
         document.getElementById('search-results').innerHTML = "";
         document.getElementById('user-search').value = "";
         loadFriends();
     };
 
+    // FRIENDS & REQUESTS LOGIC
     function loadFriends() { apiCall(`action=getFriends`, "renderFriends"); }
 
     window.renderFriends = function(data) {
@@ -184,6 +138,7 @@
 
     window.acceptFriend = function(name) { apiCall(`action=acceptFriend&friend=${encodeURIComponent(name)}`, "loadFriends"); };
 
+    // CHAT LOGIC
     function openChat(name) {
         activeFriend = name;
         document.getElementById('chat-target').innerText = name;
@@ -200,15 +155,13 @@
         document.getElementById('chat-window').innerHTML = msgs.map(m => `
             <div class="msg ${m.user.toLowerCase() === myName.toLowerCase() ? 'me' : 'them'}">${m.text}</div>
         `).join('');
-        const win = document.getElementById('chat-window'); 
-        win.scrollTop = win.scrollHeight;
+        const win = document.getElementById('chat-window'); win.scrollTop = win.scrollHeight;
     };
 
     async function send() {
         const input = document.getElementById('msg-input');
         if(!input.value.trim() || !activeFriend) return;
-        const text = input.value; 
-        input.value = "";
+        const text = input.value; input.value = "";
         await fetch(`${scriptURL}?action=sendMessage&username=${encodeURIComponent(myName)}&recipient=${encodeURIComponent(activeFriend)}&text=${encodeURIComponent(text)}`, {mode:'no-cors'});
         setTimeout(loadMessages, 500);
     }
@@ -218,4 +171,3 @@
 </script>
 </body>
 </html>
-

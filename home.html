@@ -8,60 +8,72 @@
         * { box-sizing: border-box; }
         body { font-family: sans-serif; margin: 0; display: flex; height: 100vh; background: var(--bg); overflow: hidden; }
 
-        /* Sidebar - Hidden by default on mobile */
+        /* Sidebar - Sliding Logic */
         .sidebar { 
             width: 280px; background: var(--sidebar); color: white; display: flex; 
             flex-direction: column; padding: 20px; transition: 0.3s; z-index: 1000;
         }
 
-        /* Main Chat Area */
-        .main-chat { flex: 1; display: flex; flex-direction: column; background: white; width: 100%; position: relative; }
-
-        /* Mobile Adjustments */
         @media (max-width: 768px) {
-            .sidebar { position: fixed; left: -280px; height: 100%; width: 280px; }
+            .sidebar { position: fixed; left: -280px; height: 100%; }
             .sidebar.open { left: 0; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
-            .menu-toggle { display: block !important; }
         }
 
-        /* Header */
+        /* Main Chat Area - Forces height to fit screen */
+        .main-chat { 
+            flex: 1; display: flex; flex-direction: column; background: white; 
+            width: 100%; height: 100vh; position: relative; 
+        }
+
         .chat-header { 
             padding: 15px; border-bottom: 1px solid #eee; display: flex; 
             align-items: center; gap: 10px; font-weight: bold; background: white;
+            height: 60px;
         }
+
         .menu-toggle { 
             display: none; background: #eee; border: none; padding: 8px 12px; 
             border-radius: 6px; cursor: pointer; font-size: 1.2rem;
         }
+        @media (max-width: 768px) { .menu-toggle { display: block; } }
 
-        /* Search & Lists */
-        .search-box { display: flex; gap: 5px; margin-bottom: 15px; }
-        input#user-search { flex: 1; padding: 10px; border-radius: 6px; border: none; background: #1f2937; color: white; width: 50%; }
-        .btn-find { background: #0ea5e9; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
-
-        .friends-list { flex: 1; overflow-y: auto; }
-        .friend-item { 
-            padding: 12px; border-radius: 8px; cursor: pointer; display: flex; 
-            align-items: center; gap: 10px; margin-bottom: 5px; font-size: 0.9rem;
+        /* Chat Window - Added padding-bottom so messages aren't hidden by the input */
+        #chat-window { 
+            flex: 1; padding: 15px; overflow-y: auto; display: flex; 
+            flex-direction: column; gap: 10px; background: #f9fafb;
+            padding-bottom: 80px; 
         }
-        .friend-item:hover, .friend-item.active { background: #1f2937; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; }
-        .online { background: #22c55e; }
 
-        /* Messages */
-        #chat-window { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f9fafb; }
-        .msg { padding: 10px 14px; border-radius: 15px; max-width: 85%; font-size: 0.9rem; line-height: 1.4; }
+        .msg { padding: 10px 14px; border-radius: 15px; max-width: 85%; font-size: 0.95rem; }
         .msg.me { align-self: flex-end; background: var(--primary); color: white; }
         .msg.them { align-self: flex-start; background: #e5e7eb; color: black; }
 
-        /* Input Bar */
-        .input-area { padding: 10px; border-top: 1px solid #eee; display: flex; gap: 8px; background: white; }
-        #msg-input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
-        .btn-send { background: var(--primary); color: white; border: none; padding: 0 18px; border-radius: 20px; cursor: pointer; }
+        /* FIXED INPUT AREA - This ensures it stays visible at the bottom */
+        .input-area { 
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 12px; border-top: 1px solid #eee; display: flex; 
+            gap: 8px; background: white; z-index: 5;
+        }
+        #msg-input { 
+            flex: 1; padding: 12px; border: 1px solid #ddd; 
+            border-radius: 20px; outline: none; font-size: 16px; /* 16px prevents iOS zoom */
+        }
+        .btn-send { 
+            background: var(--primary); color: white; border: none; 
+            padding: 0 20px; border-radius: 20px; cursor: pointer; font-weight: bold;
+        }
 
+        /* Sidebar Elements */
+        .search-box { display: flex; gap: 5px; margin-bottom: 15px; }
+        input#user-search { flex: 1; padding: 10px; border-radius: 6px; border: none; background: #1f2937; color: white; width: 100%; }
+        .btn-find { background: #0ea5e9; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+        .friends-list { flex: 1; overflow-y: auto; }
+        .friend-item { padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .friend-item.active { background: #1f2937; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
         .logout-btn { margin-top: 10px; background: #ef4444; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; width: 100%; }
-        .close-btn { display: none; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
-        @media (max-width: 768px) { .close-btn { display: block; margin-left: auto; } }
+        .close-btn { display: none; background: none; border: none; color: white; font-size: 1.5rem; margin-left: auto; }
+        @media (max-width: 768px) { .close-btn { display: block; } }
     </style>
 </head>
 <body>
@@ -138,7 +150,7 @@
         html += `<div style="color:#6b7280; font-size:0.7rem; margin:10px 0;">MESSAGES</div>`;
         data.friends.forEach(f => {
             html += `<div class="friend-item ${activeFriend === f.name ? 'active' : ''}" onclick="openChat('${f.name}')">
-                <div class="dot online"></div> <span>${f.name}</span></div>`;
+                <div class="dot"></div> <span>${f.name}</span></div>`;
         });
         list.innerHTML = html;
     };
@@ -148,7 +160,7 @@
     function openChat(name) {
         activeFriend = name;
         document.getElementById('chat-target').innerText = name;
-        if(window.innerWidth <= 768) toggleSidebar(); 
+        if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open'); 
         loadMessages();
     }
 

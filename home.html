@@ -6,91 +6,46 @@
     <style>
         :root { --sidebar: #111827; --primary: #3b82f6; --bg: #f3f4f6; }
         * { box-sizing: border-box; }
-        
-        html, body { 
-            margin: 0; padding: 0; 
-            height: 100vh; height: 100dvh; 
-            width: 100vw; overflow: hidden; 
-            font-family: -apple-system, sans-serif; 
-        }
-        
+        html, body { margin: 0; padding: 0; height: 100dvh; width: 100vw; overflow: hidden; font-family: sans-serif; }
         body { display: flex; background: var(--bg); }
 
-        /* Sidebar Logic */
-        .sidebar { 
-            width: 280px; background: var(--sidebar); color: white; display: flex; 
-            flex-direction: column; padding: 20px; transition: 0.3s; z-index: 1000;
-        }
+        /* Sidebar Styles */
+        .sidebar { width: 280px; background: var(--sidebar); color: white; display: flex; flex-direction: column; padding: 20px; transition: 0.3s; z-index: 1000; }
         @media (max-width: 768px) {
             .sidebar { position: fixed; left: -280px; height: 100dvh; }
             .sidebar.open { left: 0; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
         }
 
-        /* Main Chat Area */
-        .main-chat { 
-            flex: 1; display: flex; flex-direction: column; 
-            background: white; height: 100dvh; position: relative; 
-        }
+        /* Search UI Styles */
+        .search-box { display: flex; gap: 5px; margin-bottom: 15px; }
+        #user-search { flex: 1; padding: 8px; border-radius: 6px; border: none; background: #1f2937; color: white; }
+        .btn-find { background: #0ea5e9; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; }
 
-        .chat-header { 
-            height: 60px; min-height: 60px;
-            padding: 0 15px; border-bottom: 1px solid #eee; 
-            display: flex; align-items: center; gap: 10px; 
-            font-weight: bold; background: white;
-        }
-
-        .menu-toggle { 
-            display: none; background: #eee; border: none; padding: 8px; 
-            border-radius: 6px; cursor: pointer;
-        }
+        /* Chat UI Styles */
+        .main-chat { flex: 1; display: flex; flex-direction: column; background: white; height: 100dvh; position: relative; }
+        .chat-header { height: 60px; padding: 0 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px; font-weight: bold; }
+        .menu-toggle { display: none; background: #eee; border: none; padding: 8px; border-radius: 6px; cursor: pointer; }
         @media (max-width: 768px) { .menu-toggle { display: block; } }
 
-        /* Chat Window */
-        #chat-window { 
-            flex: 1; padding: 15px; overflow-y: auto; 
-            display: flex; flex-direction: column; gap: 10px; 
-            background: #f9fafb;
-        }
-
-        .msg { padding: 10px 14px; border-radius: 15px; max-width: 85%; font-size: 0.95rem; line-height: 1.4; }
+        #chat-window { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f9fafb; }
+        .msg { padding: 10px 14px; border-radius: 15px; max-width: 85%; font-size: 0.95rem; }
         .msg.me { align-self: flex-end; background: var(--primary); color: white; }
         .msg.them { align-self: flex-start; background: #e5e7eb; color: black; }
 
-        /* Input Area */
-        .input-area { 
-            height: 70px; min-height: 70px;
-            padding: 10px; border-top: 1px solid #eee; 
-            display: flex; gap: 8px; background: white; align-items: center;
-        }
-        
-        #msg-input { 
-            flex: 1; padding: 12px; border: 1px solid #ddd; 
-            border-radius: 20px; outline: none; font-size: 16px; 
-        }
-        
-        .btn-send { 
-            background: var(--primary); color: white; border: none; 
-            padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold;
-        }
+        .input-area { height: 70px; padding: 10px; border-top: 1px solid #eee; display: flex; gap: 8px; background: white; align-items: center; }
+        #msg-input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 20px; outline: none; font-size: 16px; }
+        .btn-send { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
 
-        /* Search and Friends UI */
-        .search-box { display: flex; gap: 5px; margin-bottom: 15px; }
-        input#user-search { flex: 1; padding: 8px; border-radius: 6px; border: none; background: #1f2937; color: white; width: 60%; }
-        .btn-find { background: #0ea5e9; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; }
-        
-        .section-label { color: #6b7280; font-size: 0.7rem; margin: 15px 0 5px 0; text-transform: uppercase; }
-        .friend-item { padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .friend-item { padding: 10px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
         .friend-item.active { background: #1f2937; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
-        
-        .logout-btn { margin-top: 10px; background: #ef4444; color: white; border: none; padding: 10px; border-radius: 6px; width: 100%; cursor: pointer; }
+        .logout-btn { margin-top: auto; background: #ef4444; color: white; border: none; padding: 10px; border-radius: 6px; width: 100%; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="sidebar" id="sidebar">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-            <b style="color: #3b82f6;">OJT CONNECT v2.0</b>
-            <button onclick="toggleSidebar()" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;">×</button>
+            <b>OJT CONNECT v2.0</b>
+            <button onclick="toggleSidebar()" style="background:none; border:none; color:white; font-size:20px;">×</button>
         </div>
 
         <div class="search-box">
@@ -115,12 +70,12 @@
         <div id="chat-window"></div>
         <div class="input-area">
             <input type="text" id="msg-input" placeholder="Type message..." onkeypress="if(event.key==='Enter') send()">
-            <button class="btn-send" id="send-btn" onclick="send()">Send</button>
+            <button class="btn-send" onclick="send()">Send</button>
         </div>
     </div>
 
 <script>
-    const scriptURL = "REPLACE_WITH_YOUR_DEPLOYED_URL"; 
+    const scriptURL = "PASTE_YOUR_APPS_SCRIPT_URL_HERE"; 
     const myName = localStorage.getItem("username") || "Guest";
     document.getElementById('my-name').innerText = myName;
     let activeFriend = null;
@@ -135,7 +90,7 @@
         setTimeout(() => document.body.removeChild(script), 1000);
     }
 
-    // --- SEARCH LOGIC ---
+    // SEARCH & ADD FUNCTIONS
     function doSearch() {
         const q = document.getElementById('user-search').value.trim();
         if(!q) return;
@@ -144,46 +99,37 @@
 
     window.renderSearch = function(users) {
         const resBox = document.getElementById('search-results');
-        if(users.length === 0) { resBox.innerHTML = "<div style='font-size:12px; padding:10px;'>No users found</div>"; return; }
+        if(users.length === 0) { resBox.innerHTML = "<div style='font-size:12px; padding:10px;'>Not found</div>"; return; }
         resBox.innerHTML = users.map(u => `
-            <div class="friend-item" style="background:#1f2937; font-size:13px;">
+            <div class="friend-item" style="background:#1f2937;">
                 <span>${u.name}</span>
                 <span style="color:#38bdf8; cursor:pointer; margin-left:auto;" onclick="addFriend('${u.name}')">+ Add</span>
             </div>
         `).join('');
     };
 
-    window.addFriend = function(name) {
-        apiCall(`action=addFriend&friend=${encodeURIComponent(name)}`, "afterAdd");
-    };
+    window.addFriend = function(name) { apiCall(`action=addFriend&friend=${encodeURIComponent(name)}`, "afterAdd"); };
+    window.afterAdd = function() { alert("Request Sent!"); document.getElementById('search-results').innerHTML = ""; loadFriends(); };
 
-    window.afterAdd = function(res) {
-        alert("Request sent!");
-        document.getElementById('search-results').innerHTML = "";
-        loadFriends();
-    };
-
-    // --- FRIENDS LOGIC ---
+    // FRIENDS & MESSAGING
     function loadFriends() { apiCall(`action=getFriends`, "renderFriends"); }
 
     window.renderFriends = function(data) {
         const list = document.getElementById('friends-list');
         let html = "";
-        
-        if (data.requests && data.requests.length > 0) {
-            html += `<div class="section-label">Requests</div>`;
+        if (data.requests?.length > 0) {
+            html += `<div style="font-size:10px; color:gray; margin:10px 0;">REQUESTS</div>`;
             data.requests.forEach(r => {
                 html += `<div class="friend-item" style="background:#1f2937;">
-                    <span style="flex:1">${r.name}</span>
-                    <button onclick="acceptFriend('${r.name}')" style="background:#22c55e; border:none; color:white; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:11px;">Accept</button>
+                    <span>${r.name}</span>
+                    <button onclick="acceptFriend('${r.name}')" style="background:#22c55e; border:none; color:white; padding:4px 8px; border-radius:4px; margin-left:auto;">Accept</button>
                 </div>`;
             });
         }
-
-        html += `<div class="section-label">Direct Messages</div>`;
+        html += `<div style="font-size:10px; color:gray; margin:10px 0;">FRIENDS</div>`;
         data.friends.forEach(f => {
             html += `<div class="friend-item ${activeFriend === f.name ? 'active' : ''}" onclick="openChat('${f.name}')">
-                <div class="dot"></div> <span>${f.name}</span></div>`;
+                <div style="width:8px; height:8px; border-radius:50%; background:#22c55e;"></div> <span>${f.name}</span></div>`;
         });
         list.innerHTML = html;
     };
@@ -193,11 +139,10 @@
     function openChat(name) {
         activeFriend = name;
         document.getElementById('chat-target').innerText = name;
-        if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open'); 
+        if(window.innerWidth <= 768) toggleSidebar();
         loadMessages();
     }
 
-    // --- MESSAGING LOGIC ---
     function loadMessages() {
         if(!activeFriend) return;
         apiCall(`action=getMessages&friend=${encodeURIComponent(activeFriend)}`, "renderMessages");
@@ -207,31 +152,19 @@
         document.getElementById('chat-window').innerHTML = msgs.map(m => `
             <div class="msg ${m.user.toLowerCase() === myName.toLowerCase() ? 'me' : 'them'}">${m.text}</div>
         `).join('');
-        const win = document.getElementById('chat-window'); 
-        win.scrollTop = win.scrollHeight;
+        const win = document.getElementById('chat-window'); win.scrollTop = win.scrollHeight;
     };
 
     async function send() {
         const input = document.getElementById('msg-input');
-        const text = input.value.trim();
-        if(!text || !activeFriend) return;
-
-        input.value = "";
-        // THE FIX: Sends both username AND recipient so Column D fills up!
-        const url = `${scriptURL}?action=sendMessage&username=${encodeURIComponent(myName)}&recipient=${encodeURIComponent(activeFriend)}&text=${encodeURIComponent(text)}`;
-
-        try {
-            await fetch(url, { mode: 'no-cors' });
-            loadMessages();
-        } catch(e) { console.error("Send failed", e); }
-        input.focus();
+        if(!input.value.trim() || !activeFriend) return;
+        const text = input.value; input.value = "";
+        // THE FIX: Standard fetch ensures recipient data is sent to Column D
+        await fetch(`${scriptURL}?action=sendMessage&username=${encodeURIComponent(myName)}&recipient=${encodeURIComponent(activeFriend)}&text=${encodeURIComponent(text)}`, {mode:'no-cors'});
+        loadMessages();
     }
 
-    // Auto-refresh
-    setInterval(() => { 
-        loadFriends(); 
-        if(activeFriend) loadMessages(); 
-    }, 4000);
+    setInterval(() => { loadFriends(); if(activeFriend) loadMessages(); }, 5000);
     loadFriends();
 </script>
 </body>

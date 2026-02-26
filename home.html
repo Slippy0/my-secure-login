@@ -7,62 +7,53 @@
         :root { --sidebar: #111827; --primary: #3b82f6; --bg: #f3f4f6; }
         * { box-sizing: border-box; }
         
-        /* THE FIX: Use dvh (dynamic viewport height) for mobile browsers */
-        html, body { 
-            margin: 0; padding: 0; 
-            height: 100vh; height: 100dvh; 
-            width: 100vw; overflow: hidden; 
-            font-family: -apple-system, sans-serif; 
-        }
-        
+        /* THE FIX: Ensure body and main-chat don't exceed screen height */
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; font-family: sans-serif; }
         body { display: flex; background: var(--bg); }
 
-        /* Sidebar - Sliding Logic */
         .sidebar { 
             width: 280px; background: var(--sidebar); color: white; display: flex; 
             flex-direction: column; padding: 20px; transition: 0.3s; z-index: 1000;
         }
+
         @media (max-width: 768px) {
-            .sidebar { position: fixed; left: -280px; height: 100dvh; }
+            .sidebar { position: fixed; left: -280px; height: 100%; }
             .sidebar.open { left: 0; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
         }
 
-        /* Main Chat Area - Flexible Layout */
+        /* THE FIX: main-chat must be exactly 100% height and flex column */
         .main-chat { 
-            flex: 1; display: flex; flex-direction: column; 
-            background: white; height: 100dvh; position: relative; 
+            flex: 1; display: flex; flex-direction: column; background: white; 
+            height: 100%; width: 100%; position: relative; overflow: hidden;
         }
 
-        /* Header - Stay at top */
         .chat-header { 
-            height: 60px; min-height: 60px;
-            padding: 0 15px; border-bottom: 1px solid #eee; 
-            display: flex; align-items: center; gap: 10px; 
-            font-weight: bold; background: white;
+            flex: 0 0 60px; /* Fixed height header */
+            padding: 0 15px; border-bottom: 1px solid #eee; display: flex; 
+            align-items: center; gap: 10px; font-weight: bold; background: white;
         }
 
         .menu-toggle { 
-            display: none; background: #eee; border: none; padding: 8px; 
-            border-radius: 6px; cursor: pointer;
+            display: none; background: #eee; border: none; padding: 8px 12px; 
+            border-radius: 6px; cursor: pointer; font-size: 1.2rem;
         }
         @media (max-width: 768px) { .menu-toggle { display: block; } }
 
-        /* Chat Window - The middle part that shrinks when keyboard opens */
+        /* THE FIX: chat-window uses flex: 1 to fill middle space only */
         #chat-window { 
-            flex: 1; padding: 15px; overflow-y: auto; 
-            display: flex; flex-direction: column; gap: 10px; 
-            background: #f9fafb;
+            flex: 1; padding: 15px; overflow-y: auto; display: flex; 
+            flex-direction: column; gap: 10px; background: #f9fafb;
         }
 
-        .msg { padding: 10px 14px; border-radius: 15px; max-width: 85%; font-size: 0.95rem; }
+        .msg { padding: 10px 14px; border-radius: 15px; max-width: 85%; font-size: 0.95rem; line-height: 1.4; }
         .msg.me { align-self: flex-end; background: var(--primary); color: white; }
         .msg.them { align-self: flex-start; background: #e5e7eb; color: black; }
 
-        /* Input Area - Stay at bottom */
+        /* THE FIX: input-area stays at the bottom within the flex container */
         .input-area { 
-            height: 70px; min-height: 70px;
-            padding: 10px; border-top: 1px solid #eee; 
-            display: flex; gap: 8px; background: white; align-items: center;
+            flex: 0 0 70px; /* Fixed height input area */
+            padding: 10px; border-top: 1px solid #eee; display: flex; 
+            gap: 8px; background: white; align-items: center;
         }
         
         #msg-input { 
@@ -75,18 +66,30 @@
             padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold;
         }
 
-        /* Lists and UI helper classes */
-        .friend-item { padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        /* Sidebar Elements */
+        .search-box { display: flex; gap: 5px; margin-bottom: 15px; }
+        input#user-search { flex: 1; padding: 10px; border-radius: 6px; border: none; background: #1f2937; color: white; width: 100%; }
+        .btn-find { background: #0ea5e9; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+        .friends-list { flex: 1; overflow-y: auto; }
+        .friend-item { padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; font-size: 0.9rem;}
         .friend-item.active { background: #1f2937; }
-        .logout-btn { margin-top: auto; background: #ef4444; color: white; border: none; padding: 10px; border-radius: 6px; width: 100%; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+        .logout-btn { margin-top: 10px; background: #ef4444; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; width: 100%; }
+        .close-btn { display: none; background: none; border: none; color: white; font-size: 1.5rem; margin-left: auto; }
+        @media (max-width: 768px) { .close-btn { display: block; } }
     </style>
 </head>
 <body>
     <div class="sidebar" id="sidebar">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-            <b style="color: #3b82f6;">OJT CONNECT v2.0</b>
-            <button onclick="toggleSidebar()" style="background:none; border:none; color:white; font-size:20px;">×</button>
+        <div style="display: flex; align-items: center; margin-bottom: 20px;">
+            <span style="font-weight: bold; color: #3b82f6;">OJT CONNECT v2.0</span>
+            <button class="close-btn" onclick="toggleSidebar()">×</button>
         </div>
+        <div class="search-box">
+            <input type="text" id="user-search" placeholder="Search..." onkeypress="if(event.key==='Enter') doSearch()">
+            <button class="btn-find" onclick="doSearch()">Find</button>
+        </div>
+        <div id="search-results"></div>
         <div class="friends-list" id="friends-list"></div>
         <div style="margin-top:auto; font-size: 0.8rem; border-top: 1px solid #374151; padding-top: 10px;">
             Logged as: <b id="my-name"></b>
@@ -102,7 +105,7 @@
         <div id="chat-window"></div>
         <div class="input-area">
             <input type="text" id="msg-input" placeholder="Type message..." onkeypress="if(event.key==='Enter') send()">
-            <button class="btn-send" id="send-btn" onclick="send()">Send</button>
+            <button class="btn-send" onclick="send()">Send</button>
         </div>
     </div>
 
@@ -119,20 +122,43 @@
         const script = document.createElement('script');
         script.src = `${scriptURL}?${params}&callback=${callback}&me=${encodeURIComponent(myName)}`;
         document.body.appendChild(script);
-        setTimeout(() => document.body.removeChild(script), 1000);
+        document.body.removeChild(script);
     }
+
+    function doSearch() {
+        const q = document.getElementById('user-search').value.trim();
+        if(!q) return;
+        apiCall(`action=searchUsers&query=${encodeURIComponent(q)}`, "renderSearch");
+    }
+
+    window.renderSearch = function(users) {
+        const resBox = document.getElementById('search-results');
+        resBox.innerHTML = users.map(u => `<div class="friend-item">${u.name} <span style="color:#38bdf8;margin-left:auto" onclick="addFriend('${u.name}')">+ Add</span></div>`).join('');
+    };
+
+    window.addFriend = function(name) { apiCall(`action=addFriend&friend=${encodeURIComponent(name)}`, "loadFriends"); };
 
     function loadFriends() { apiCall(`action=getFriends`, "renderFriends"); }
 
     window.renderFriends = function(data) {
         const list = document.getElementById('friends-list');
         let html = "";
+        if (data.requests?.length > 0) {
+            html += `<div style="color:#6b7280; font-size:0.7rem; margin:10px 0;">REQUESTS</div>`;
+            data.requests.forEach(r => {
+                html += `<div class="friend-item" style="background:#1f2937;">${r.name} 
+                <button onclick="acceptFriend('${r.name}')" style="background:#22c55e; border:none; color:white; padding:4px 8px; border-radius:4px; margin-left:auto;">Accept</button></div>`;
+            });
+        }
+        html += `<div style="color:#6b7280; font-size:0.7rem; margin:10px 0;">MESSAGES</div>`;
         data.friends.forEach(f => {
             html += `<div class="friend-item ${activeFriend === f.name ? 'active' : ''}" onclick="openChat('${f.name}')">
-                <div style="width:8px; height:8px; border-radius:50%; background:#22c55e;"></div> <span>${f.name}</span></div>`;
+                <div class="dot"></div> <span>${f.name}</span></div>`;
         });
         list.innerHTML = html;
     };
+
+    window.acceptFriend = function(name) { apiCall(`action=acceptFriend&friend=${encodeURIComponent(name)}`, "loadFriends"); };
 
     function openChat(name) {
         activeFriend = name;
@@ -150,34 +176,18 @@
         document.getElementById('chat-window').innerHTML = msgs.map(m => `
             <div class="msg ${m.user.toLowerCase() === myName.toLowerCase() ? 'me' : 'them'}">${m.text}</div>
         `).join('');
-        const win = document.getElementById('chat-window'); 
-        win.scrollTop = win.scrollHeight;
+        const win = document.getElementById('chat-window'); win.scrollTop = win.scrollHeight;
     };
 
     async function send() {
         const input = document.getElementById('msg-input');
-        const sendBtn = document.getElementById('send-btn');
         if(!input.value.trim() || !activeFriend) return;
-
-        const text = input.value;
-        input.value = "";
-        sendBtn.disabled = true; // Prevent double taps
-
-        // THE FIX: Standard fetch for reliability
-        try {
-            await fetch(`${scriptURL}?action=sendMessage&username=${encodeURIComponent(myName)}&recipient=${encodeURIComponent(activeFriend)}&text=${encodeURIComponent(text)}`, {mode:'no-cors'});
-            loadMessages();
-        } catch(e) { console.error("Send failed", e); }
-        
-        sendBtn.disabled = false;
-        input.focus();
+        const text = input.value; input.value = "";
+        await fetch(`${scriptURL}?action=sendMessage&username=${encodeURIComponent(myName)}&recipient=${encodeURIComponent(activeFriend)}&text=${encodeURIComponent(text)}`, {mode:'no-cors'});
+        setTimeout(loadMessages, 500);
     }
 
-    // Faster updates for mobile responsiveness
-    setInterval(() => { 
-        loadFriends(); 
-        if(activeFriend) loadMessages(); 
-    }, 4000);
+    setInterval(() => { loadFriends(); if(activeFriend) loadMessages(); }, 5000);
     loadFriends();
 </script>
 </body>

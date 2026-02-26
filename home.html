@@ -7,7 +7,6 @@
         :root { --sidebar: #111827; --primary: #3b82f6; --bg: #f3f4f6; }
         * { box-sizing: border-box; }
         
-        /* THE FIX: Use dvh (dynamic viewport height) for mobile browsers */
         html, body { 
             margin: 0; padding: 0; 
             height: 100vh; height: 100dvh; 
@@ -17,7 +16,7 @@
         
         body { display: flex; background: var(--bg); }
 
-        /* Sidebar - Sliding Logic */
+        /* Sidebar Logic */
         .sidebar { 
             width: 280px; background: var(--sidebar); color: white; display: flex; 
             flex-direction: column; padding: 20px; transition: 0.3s; z-index: 1000;
@@ -27,13 +26,12 @@
             .sidebar.open { left: 0; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
         }
 
-        /* Main Chat Area - Flexible Layout */
+        /* Main Chat Area */
         .main-chat { 
             flex: 1; display: flex; flex-direction: column; 
             background: white; height: 100dvh; position: relative; 
         }
 
-        /* Header - Stay at top */
         .chat-header { 
             height: 60px; min-height: 60px;
             padding: 0 15px; border-bottom: 1px solid #eee; 
@@ -47,18 +45,18 @@
         }
         @media (max-width: 768px) { .menu-toggle { display: block; } }
 
-        /* Chat Window - The middle part that shrinks when keyboard opens */
+        /* Chat Window */
         #chat-window { 
             flex: 1; padding: 15px; overflow-y: auto; 
             display: flex; flex-direction: column; gap: 10px; 
             background: #f9fafb;
         }
 
-        .msg { padding: 10px 14px; border-radius: 15px; max-width: 85%; font-size: 0.95rem; }
+        .msg { padding: 10px 14px; border-radius: 15px; max-width: 85%; font-size: 0.95rem; line-height: 1.4; }
         .msg.me { align-self: flex-end; background: var(--primary); color: white; }
         .msg.them { align-self: flex-start; background: #e5e7eb; color: black; }
 
-        /* Input Area - Stay at bottom */
+        /* Input Area */
         .input-area { 
             height: 70px; min-height: 70px;
             padding: 10px; border-top: 1px solid #eee; 
@@ -75,19 +73,34 @@
             padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold;
         }
 
-        /* Lists and UI helper classes */
+        /* Search and Friends UI */
+        .search-box { display: flex; gap: 5px; margin-bottom: 15px; }
+        input#user-search { flex: 1; padding: 8px; border-radius: 6px; border: none; background: #1f2937; color: white; width: 60%; }
+        .btn-find { background: #0ea5e9; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; }
+        
+        .section-label { color: #6b7280; font-size: 0.7rem; margin: 15px 0 5px 0; text-transform: uppercase; }
         .friend-item { padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
         .friend-item.active { background: #1f2937; }
-        .logout-btn { margin-top: auto; background: #ef4444; color: white; border: none; padding: 10px; border-radius: 6px; width: 100%; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+        
+        .logout-btn { margin-top: 10px; background: #ef4444; color: white; border: none; padding: 10px; border-radius: 6px; width: 100%; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="sidebar" id="sidebar">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
             <b style="color: #3b82f6;">OJT CONNECT v2.0</b>
-            <button onclick="toggleSidebar()" style="background:none; border:none; color:white; font-size:20px;">×</button>
+            <button onclick="toggleSidebar()" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;">×</button>
         </div>
-        <div class="friends-list" id="friends-list"></div>
+
+        <div class="search-box">
+            <input type="text" id="user-search" placeholder="Search user..." onkeypress="if(event.key==='Enter') doSearch()">
+            <button class="btn-find" onclick="doSearch()">Find</button>
+        </div>
+        <div id="search-results"></div>
+
+        <div id="friends-list" style="flex:1; overflow-y:auto;"></div>
+
         <div style="margin-top:auto; font-size: 0.8rem; border-top: 1px solid #374151; padding-top: 10px;">
             Logged as: <b id="my-name"></b>
             <button class="logout-btn" onclick="logout()">LOGOUT</button>
@@ -107,7 +120,7 @@
     </div>
 
 <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbxqHFa-SUSDC7uE3nJBdYSG2lhtuQb2FaVpybW2yT4gBoFdGGVyYAIQvTGEdJPv8rUU/exec";
+    const scriptURL = "REPLACE_WITH_YOUR_DEPLOYED_URL"; 
     const myName = localStorage.getItem("username") || "Guest";
     document.getElementById('my-name').innerText = myName;
     let activeFriend = null;
@@ -122,17 +135,60 @@
         setTimeout(() => document.body.removeChild(script), 1000);
     }
 
+    // --- SEARCH LOGIC ---
+    function doSearch() {
+        const q = document.getElementById('user-search').value.trim();
+        if(!q) return;
+        apiCall(`action=searchUsers&query=${encodeURIComponent(q)}`, "renderSearch");
+    }
+
+    window.renderSearch = function(users) {
+        const resBox = document.getElementById('search-results');
+        if(users.length === 0) { resBox.innerHTML = "<div style='font-size:12px; padding:10px;'>No users found</div>"; return; }
+        resBox.innerHTML = users.map(u => `
+            <div class="friend-item" style="background:#1f2937; font-size:13px;">
+                <span>${u.name}</span>
+                <span style="color:#38bdf8; cursor:pointer; margin-left:auto;" onclick="addFriend('${u.name}')">+ Add</span>
+            </div>
+        `).join('');
+    };
+
+    window.addFriend = function(name) {
+        apiCall(`action=addFriend&friend=${encodeURIComponent(name)}`, "afterAdd");
+    };
+
+    window.afterAdd = function(res) {
+        alert("Request sent!");
+        document.getElementById('search-results').innerHTML = "";
+        loadFriends();
+    };
+
+    // --- FRIENDS LOGIC ---
     function loadFriends() { apiCall(`action=getFriends`, "renderFriends"); }
 
     window.renderFriends = function(data) {
         const list = document.getElementById('friends-list');
         let html = "";
+        
+        if (data.requests && data.requests.length > 0) {
+            html += `<div class="section-label">Requests</div>`;
+            data.requests.forEach(r => {
+                html += `<div class="friend-item" style="background:#1f2937;">
+                    <span style="flex:1">${r.name}</span>
+                    <button onclick="acceptFriend('${r.name}')" style="background:#22c55e; border:none; color:white; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:11px;">Accept</button>
+                </div>`;
+            });
+        }
+
+        html += `<div class="section-label">Direct Messages</div>`;
         data.friends.forEach(f => {
             html += `<div class="friend-item ${activeFriend === f.name ? 'active' : ''}" onclick="openChat('${f.name}')">
-                <div style="width:8px; height:8px; border-radius:50%; background:#22c55e;"></div> <span>${f.name}</span></div>`;
+                <div class="dot"></div> <span>${f.name}</span></div>`;
         });
         list.innerHTML = html;
     };
+
+    window.acceptFriend = function(name) { apiCall(`action=acceptFriend&friend=${encodeURIComponent(name)}`, "loadFriends"); };
 
     function openChat(name) {
         activeFriend = name;
@@ -141,6 +197,7 @@
         loadMessages();
     }
 
+    // --- MESSAGING LOGIC ---
     function loadMessages() {
         if(!activeFriend) return;
         apiCall(`action=getMessages&friend=${encodeURIComponent(activeFriend)}`, "renderMessages");
@@ -156,24 +213,21 @@
 
     async function send() {
         const input = document.getElementById('msg-input');
-        const sendBtn = document.getElementById('send-btn');
-        if(!input.value.trim() || !activeFriend) return;
+        const text = input.value.trim();
+        if(!text || !activeFriend) return;
 
-        const text = input.value;
         input.value = "";
-        sendBtn.disabled = true; // Prevent double taps
+        // THE FIX: Sends both username AND recipient so Column D fills up!
+        const url = `${scriptURL}?action=sendMessage&username=${encodeURIComponent(myName)}&recipient=${encodeURIComponent(activeFriend)}&text=${encodeURIComponent(text)}`;
 
-        // THE FIX: Standard fetch for reliability
         try {
-            await fetch(`${scriptURL}?action=sendMessage&username=${encodeURIComponent(myName)}&recipient=${encodeURIComponent(activeFriend)}&text=${encodeURIComponent(text)}`, {mode:'no-cors'});
+            await fetch(url, { mode: 'no-cors' });
             loadMessages();
         } catch(e) { console.error("Send failed", e); }
-        
-        sendBtn.disabled = false;
         input.focus();
     }
 
-    // Faster updates for mobile responsiveness
+    // Auto-refresh
     setInterval(() => { 
         loadFriends(); 
         if(activeFriend) loadMessages(); 

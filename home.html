@@ -1,55 +1,102 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OJT Portal</title>
     <style>
-        :root { --sidebar: #111827; --primary: #3b82f6; }
-        body { font-family: sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; background: #f3f4f6; }
-        .sidebar { width: 280px; background: var(--sidebar); color: white; display: flex; flex-direction: column; padding: 20px; }
-        .logo { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; color: #3b82f6; }
+        :root { --sidebar: #111827; --primary: #3b82f6; --text-light: #9ca3af; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; display: flex; height: 100vh; background: #f3f4f6; overflow: hidden; }
+        
+        /* Layout Handling */
+        .sidebar { 
+            width: 280px; background: var(--sidebar); color: white; display: flex; 
+            flex-direction: column; padding: 20px; transition: all 0.3s ease;
+            z-index: 10;
+        }
+        .main-chat { flex: 1; display: flex; flex-direction: column; background: white; position: relative; }
+
+        /* Responsive Sidebar Logic */
+        @media (max-width: 768px) {
+            .sidebar { 
+                position: absolute; left: -100%; width: 100%; height: 100%; 
+            }
+            .sidebar.open { left: 0; }
+            .main-chat { width: 100%; }
+        }
+
+        /* Sidebar Elements */
+        .logo { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; color: #3b82f6; display: flex; justify-content: space-between; }
         .search-box { margin-bottom: 20px; display: flex; gap: 5px; }
-        input#user-search { flex: 1; padding: 8px; border-radius: 4px; border: none; background: #1f2937; color: white; }
-        .btn-find { padding: 8px 12px; background: #0ea5e9; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        #search-results { background: #1f2937; border-radius: 4px; margin-top: 5px; max-height: 150px; overflow-y: auto; }
-        .res-item { padding: 8px; border-bottom: 1px solid #374151; display: flex; justify-content: space-between; font-size: 0.8rem; }
+        input#user-search { flex: 1; padding: 10px; border-radius: 8px; border: none; background: #1f2937; color: white; outline: none; }
+        .btn-find { padding: 8px 12px; background: #0ea5e9; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        
+        #search-results { background: #1f2937; border-radius: 6px; margin-top: 5px; max-height: 150px; overflow-y: auto; }
+        .res-item { padding: 12px; border-bottom: 1px solid #374151; display: flex; justify-content: space-between; font-size: 0.85rem; }
         .add-link { color: #38bdf8; cursor: pointer; font-weight: bold; }
+
         .section-label { color: #6b7280; font-size: 0.7rem; letter-spacing: 1px; margin: 15px 0 10px 0; text-transform: uppercase; }
         .friends-list { flex: 1; overflow-y: auto; }
-        .friend-item { padding: 10px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .friend-item { padding: 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
         .friend-item:hover, .friend-item.active { background: #1f2937; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; }
+        
+        .dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--sidebar); }
         .online { background: #22c55e; }
         .offline { background: #9ca3af; }
-        .main-chat { flex: 1; display: flex; flex-direction: column; background: white; }
-        #chat-window { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f9fafb; }
-        .msg { padding: 10px 15px; border-radius: 12px; max-width: 60%; font-size: 0.9rem; word-wrap: break-word; }
-        .msg.me { align-self: flex-end; background: var(--primary); color: white; }
-        .msg.them { align-self: flex-start; background: #e5e7eb; color: black; }
-        .input-area { padding: 20px; border-top: 1px solid #e5e7eb; display: flex; gap: 10px; }
-        #msg-input { flex: 1; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; }
-        .logout-btn { margin-top: 15px; background: #ef4444; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 0.8rem; }
+
+        /* Chat Header with Mobile Toggle */
+        .chat-header { 
+            padding: 15px 20px; border-bottom: 1px solid #e5e7eb; 
+            display: flex; align-items: center; gap: 15px; font-weight: bold; 
+        }
+        .menu-toggle { 
+            display: none; background: #f3f4f6; border: none; padding: 8px; 
+            border-radius: 6px; cursor: pointer; font-size: 1.2rem;
+        }
+        @media (max-width: 768px) { .menu-toggle { display: block; } }
+
+        /* Messages */
+        #chat-window { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: #f9fafb; }
+        .msg { padding: 10px 16px; border-radius: 18px; max-width: 80%; font-size: 0.95rem; line-height: 1.4; word-wrap: break-word; }
+        .msg.me { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
+        .msg.them { align-self: flex-start; background: #e5e7eb; color: black; border-bottom-left-radius: 4px; }
+
+        /* Input Area */
+        .input-area { padding: 15px; border-top: 1px solid #e5e7eb; display: flex; gap: 10px; background: white; }
+        #msg-input { flex: 1; padding: 12px; border: 1px solid #d1d5db; border-radius: 25px; outline: none; padding-left: 20px; }
+        .btn-send { background: var(--primary); color: white; border: none; padding: 0 20px; border-radius: 25px; cursor: pointer; font-weight: bold; }
+
+        .logout-btn { margin-top: 15px; background: #ef4444; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; }
+        .close-menu { display: none; font-size: 1.5rem; cursor: pointer; }
+        @media (max-width: 768px) { .close-menu { display: block; } }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="logo">OJT CONNECT v2.0</div>
+    <div class="sidebar" id="sidebar">
+        <div class="logo">
+            <span>OJT CONNECT</span>
+            <span class="close-menu" onclick="toggleSidebar()">×</span>
+        </div>
         <div class="search-box">
-            <input type="text" id="user-search" placeholder="Search for a user..." onkeypress="if(event.key==='Enter') doSearch()">
+            <input type="text" id="user-search" placeholder="Search users..." onkeypress="if(event.key==='Enter') doSearch()">
             <button class="btn-find" onclick="doSearch()">Find</button>
         </div>
         <div id="search-results"></div>
         <div class="friends-list" id="friends-list"></div>
-        <div style="font-size: 0.8rem; border-top: 1px solid #374151; padding-top: 10px;">
+        <div style="margin-top:auto; font-size: 0.85rem; border-top: 1px solid #374151; padding-top: 15px;">
             Logged as: <b id="my-name"></b>
             <button class="logout-btn" onclick="logout()">LOGOUT</button>
         </div>
     </div>
+
     <div class="main-chat">
-        <div style="padding: 20px; border-bottom: 1px solid #eee; font-weight: bold;" id="chat-target">Select a friend</div>
+        <div class="chat-header">
+            <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+            <span id="chat-target">Select a friend</span>
+        </div>
         <div id="chat-window"></div>
         <div class="input-area">
-            <input type="text" id="msg-input" placeholder="Type message..." onkeypress="if(event.key==='Enter') send()">
-            <button style="background:var(--primary); color:white; border:none; padding:10px 25px; border-radius:8px; cursor:pointer;" onclick="send()">Send</button>
+            <input type="text" id="msg-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') send()">
+            <button class="btn-send" onclick="send()">Send</button>
         </div>
     </div>
 
@@ -58,6 +105,10 @@
     const myName = localStorage.getItem("username") || "Guest";
     document.getElementById('my-name').innerText = myName;
     let activeFriend = null;
+
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+    }
 
     function logout() {
         localStorage.removeItem("username");
@@ -93,8 +144,7 @@
     };
 
     window.afterAdd = function(res) {
-        if(res === "Already Connected") alert("Request already exists!");
-        else alert("Friend request sent!");
+        alert("Friend request sent!");
         document.getElementById('search-results').innerHTML = "";
         loadFriends();
     };
@@ -111,7 +161,7 @@
             data.requests.forEach(r => {
                 html += `<div class="friend-item" style="background:#1f2937;">
                     <span style="flex:1">${r.name}</span>
-                    <button onclick="acceptFriend('${r.name}')" style="background:#22c55e; border:none; color:white; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:10px;">ACCEPT</button>
+                    <button onclick="acceptFriend('${r.name}')" style="background:#22c55e; border:none; color:white; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:10px;">ACCEPT</button>
                 </div>`;
             });
         }
@@ -131,6 +181,7 @@
     function openChat(name) {
         activeFriend = name;
         document.getElementById('chat-target').innerText = name;
+        if(window.innerWidth <= 768) toggleSidebar(); // Close sidebar on mobile after selecting
         loadMessages();
     }
 
@@ -152,7 +203,6 @@
         if(!input.value.trim() || !activeFriend) return;
         const text = input.value;
         input.value = "";
-        // Sending with recipient tagged so it only shows in the private chat
         await fetch(`${scriptURL}?action=sendMessage&username=${encodeURIComponent(myName)}&recipient=${encodeURIComponent(activeFriend)}&text=${encodeURIComponent(text)}`, {mode:'no-cors'});
         setTimeout(loadMessages, 500);
     }

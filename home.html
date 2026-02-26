@@ -23,18 +23,40 @@
         .msg.me { align-self: flex-end; background: var(--primary); color: white; }
         .msg.them { align-self: flex-start; background: #e5e7eb; color: black; }
         .input-box { padding: 20px; border-top: 1px solid #eee; display: flex; gap: 10px; }
+        
+        /* Logout Button Style */
+        .logout-btn { 
+            margin-top: 15px; 
+            background: #ef4444; 
+            color: white; 
+            border: none; 
+            padding: 8px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 0.8rem; 
+            width: 100%;
+            font-weight: bold;
+        }
+        .logout-btn:hover { background: #dc2626; }
     </style>
 </head>
 <body>
     <div class="sidebar">
         <div style="font-size:1.2rem; font-weight:bold; margin-bottom:20px;">OJT CONNECT v2.0</div>
+        
         <div class="search-area">
-            <input type="text" id="user-search" placeholder="Search users..." onkeypress="if(event.key==='Enter') doSearch()">
+            <input type="text" id="user-search" placeholder="Search for a user..." onkeypress="if(event.key==='Enter') doSearch()">
             <div id="search-results"></div>
         </div>
-        <div id="friends-list"></div>
-        <div style="margin-top:auto; font-size:0.8rem; opacity:0.6;">Logged as: <span id="my-name"></span></div>
+        
+        <div class="friends-list" id="friends-list"></div>
+        
+        <div style="margin-top:auto; font-size:0.8rem; border-top: 1px solid #374151; padding-top: 15px;">
+            <div>Logged as: <b id="my-name"></b></div>
+            <button class="logout-btn" onclick="logout()">LOGOUT</button>
+        </div>
     </div>
+
     <div class="main">
         <div id="chat-window"></div>
         <div class="input-box">
@@ -44,7 +66,8 @@
     </div>
 
 <script>
-    const scriptURL = "YOUR_NEW_DEPLOYMENT_URL_HERE";
+    // MAKE SURE TO PASTE YOUR URL BELOW
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxeLbilS4uSwDVyd9WABRMSD6MXgTwy7wVV9FXEjpRgHxfBpF0xFgKlKTpqoDGhn5qn/exec";
     const myName = localStorage.getItem("username") || "Guest";
     document.getElementById('my-name').innerText = myName;
     let activeFriend = null;
@@ -57,6 +80,11 @@
         document.body.removeChild(script);
     }
 
+    function logout() {
+        localStorage.removeItem("username");
+        window.location.href = "index.html"; // Make sure your login page is named index.html
+    }
+
     function doSearch() {
         const q = document.getElementById('user-search').value;
         if(!q) return;
@@ -65,6 +93,7 @@
 
     window.renderSearch = (users) => {
         const box = document.getElementById('search-results');
+        if(users.length === 0) { box.innerHTML = "<div class='res-item'>No users found</div>"; return; }
         box.innerHTML = users.map(u => `
             <div class="res-item">
                 ${u.name} <span class="add-link" onclick="addFriend('${u.name}')">+ Add</span>
@@ -79,6 +108,7 @@
     window.afterAdd = () => {
         alert("Request Sent!");
         document.getElementById('search-results').innerHTML = "";
+        document.getElementById('user-search').value = "";
         loadFriends();
     };
 
@@ -93,7 +123,7 @@
             data.requests.forEach(r => {
                 html += `<div class="friend-item" style="background:#1f2937;">
                     <span style="flex:1">${r.name}</span>
-                    <button onclick="acceptFriend('${r.name}')" style="background:#22c55e; border:none; color:white; border-radius:4px; cursor:pointer;">Accept</button>
+                    <button onclick="acceptFriend('${r.name}')" style="background:#22c55e; border:none; color:white; border-radius:4px; cursor:pointer; padding:5px;">Accept</button>
                 </div>`;
             });
         }

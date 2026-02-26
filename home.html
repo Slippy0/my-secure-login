@@ -47,6 +47,12 @@
             <button class="btn-find" onclick="doSearch()">Find</button>
         </div>
         <div id="search-results"></div>
+        
+        <div id="suggestions-area">
+            <div style="color:#6b7280; font-size:0.7rem; margin:10px 0;">PEOPLE YOU MAY KNOW</div>
+            <div id="suggestions-list"></div>
+        </div>
+
         <div class="friends-list" id="friends-list"></div>
         <div style="margin-top:auto; font-size: 0.8rem; border-top: 1px solid #374151; padding-top: 10px;">
             Logged as: <b id="my-name"></b>
@@ -67,7 +73,7 @@
     </div>
 
 <script>
-    const scriptURL = "PASTE_YOUR_SCRIPT_URL_HERE";
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxqHFa-SUSDC7uE3nJBdYSG2lhtuQb2FaVpybW2yT4gBoFdGGVyYAIQvTGEdJPv8rUU/exec";
     const myName = localStorage.getItem("username") || "Guest";
     document.getElementById('my-name').innerText = myName;
     let activeFriend = null;
@@ -82,7 +88,7 @@
         setTimeout(() => { if(script.parentNode) document.body.removeChild(script); }, 1500);
     }
 
-    // SEARCH LOGIC
+    // SEARCH
     function doSearch() {
         const q = document.getElementById('user-search').value.trim();
         if(!q) return;
@@ -91,54 +97,47 @@
 
     window.renderSearch = function(users) {
         const resBox = document.getElementById('search-results');
-        if(!users || users.length === 0) {
-            resBox.innerHTML = '<div style="color:gray;padding:10px;font-size:0.8rem">Not found</div>';
-            return;
-        }
-        resBox.innerHTML = users.map(u => `
-            <div class="friend-item" style="background:#1f2937; margin-bottom:5px;">
+        if(!users || users.length === 0) { resBox.innerHTML = '<div style="color:gray;padding:10px;font-size:0.8rem">Not found</div>'; return; }
+        resBox.innerHTML = users.map(u => `<div class="friend-item" style="background:#1f2937;">${u.name} <span style="color:#38bdf8;margin-left:auto;cursor:pointer" onclick="addFriend('${u.name}')">+ Add</span></div>`).join('');
+    };
+
+    // SUGGESTIONS
+    function loadSuggestions() { apiCall(`action=getSuggestions`, "renderSuggestions"); }
+    window.renderSuggestions = function(data) {
+        const list = document.getElementById('suggestions-list');
+        if(!data || data.length === 0) { list.innerHTML = ""; return; }
+        list.innerHTML = data.slice(0, 3).map(u => `
+            <div class="friend-item" style="border: 1px dashed #3b82f6; margin-bottom: 5px;">
                 <span>${u.name}</span>
-                <span style="color:#38bdf8; margin-left:auto; cursor:pointer;" onclick="addFriend('${u.name}')">+ Add</span>
-            </div>`).join('');
+                <span style="color:#38bdf8; margin-left:auto; cursor:pointer;" onclick="addFriend('${u.name}')">Add</span>
+            </div>
+        `).join('');
     };
 
-    window.addFriend = function(name) { 
-        apiCall(`action=addFriend&friend=${encodeURIComponent(name)}`, "afterAdd"); 
-    };
+    // ADD FRIEND
+    window.addFriend = function(name) { apiCall(`action=addFriend&friend=${encodeURIComponent(name)}`, "afterAdd"); };
+    window.afterAdd = function() { alert("Request Sent!"); document.getElementById('search-results').innerHTML = ""; loadFriends(); loadSuggestions(); };
 
-    window.afterAdd = function() {
-        alert("Request Sent!");
-        document.getElementById('search-results').innerHTML = "";
-        document.getElementById('user-search').value = "";
-        loadFriends();
-    };
-
-    // FRIENDS & REQUESTS LOGIC
+    // FRIENDS & MESSAGES
     function loadFriends() { apiCall(`action=getFriends`, "renderFriends"); }
-
     window.renderFriends = function(data) {
         const list = document.getElementById('friends-list');
         let html = "";
         if (data.requests?.length > 0) {
             html += `<div style="color:#6b7280; font-size:0.7rem; margin:10px 0;">REQUESTS</div>`;
             data.requests.forEach(r => {
-                html += `<div class="friend-item" style="background:#1f2937;">
-                    <span>${r.name}</span>
-                    <button onclick="acceptFriend('${r.name}')" style="background:#22c55e; border:none; color:white; padding:4px 8px; border-radius:4px; margin-left:auto; cursor:pointer;">Accept</button>
-                </div>`;
+                html += `<div class="friend-item" style="background:#1f2937;">${r.name} <button onclick="acceptFriend('${r.name}')" style="background:#22c55e; border:none; color:white; padding:4px 8px; border-radius:4px; margin-left:auto; cursor:pointer;">Accept</button></div>`;
             });
         }
         html += `<div style="color:#6b7280; font-size:0.7rem; margin:10px 0;">MESSAGES</div>`;
         data.friends.forEach(f => {
-            html += `<div class="friend-item ${activeFriend === f.name ? 'active' : ''}" onclick="openChat('${f.name}')">
-                <div class="dot"></div> <span>${f.name}</span></div>`;
+            html += `<div class="friend-item ${activeFriend === f.name ? 'active' : ''}" onclick="openChat('${f.name}')"><div class="dot"></div> <span>${f.name}</span></div>`;
         });
         list.innerHTML = html;
     };
 
     window.acceptFriend = function(name) { apiCall(`action=acceptFriend&friend=${encodeURIComponent(name)}`, "loadFriends"); };
 
-    // CHAT LOGIC
     function openChat(name) {
         activeFriend = name;
         document.getElementById('chat-target').innerText = name;
@@ -152,9 +151,7 @@
     }
 
     window.renderMessages = function(msgs) {
-        document.getElementById('chat-window').innerHTML = msgs.map(m => `
-            <div class="msg ${m.user.toLowerCase() === myName.toLowerCase() ? 'me' : 'them'}">${m.text}</div>
-        `).join('');
+        document.getElementById('chat-window').innerHTML = msgs.map(m => `<div class="msg ${m.user.toLowerCase() === myName.toLowerCase() ? 'me' : 'them'}">${m.text}</div>`).join('');
         const win = document.getElementById('chat-window'); win.scrollTop = win.scrollHeight;
     };
 
@@ -166,8 +163,8 @@
         setTimeout(loadMessages, 500);
     }
 
-    setInterval(() => { loadFriends(); if(activeFriend) loadMessages(); }, 5000);
-    loadFriends();
+    setInterval(() => { loadFriends(); loadSuggestions(); if(activeFriend) loadMessages(); }, 5000);
+    loadFriends(); loadSuggestions();
 </script>
 </body>
 </html>

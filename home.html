@@ -4,247 +4,185 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>OJT Portal | Premium</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { 
-            --primary: #6366f1; 
-            --primary-dark: #4f46e5;
-            --sidebar-bg: #0f172a;
-            --main-bg: #f8fafc;
-            --glass: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.1);
-        }
+        :root { --primary: #6366f1; --sidebar-bg: #0f172a; --main-bg: #f8fafc; --glass: rgba(255, 255, 255, 0.05); }
+        * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; display: flex; background: var(--main-bg); }
 
-        * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: var(--main-bg); }
-        body { display: flex; }
-
-        /* --- SIDEBAR --- */
-        .sidebar { 
-            width: 320px; background: var(--sidebar-bg); color: #fff; 
-            display: flex; flex-direction: column; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-right: 1px solid rgba(0,0,0,0.1); z-index: 1000;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar { position: fixed; left: -320px; height: 100%; width: 85%; }
-            .sidebar.open { left: 0; box-shadow: 20px 0 50px rgba(0,0,0,0.5); }
-        }
-
-        .sidebar-header { padding: 30px 24px; display: flex; align-items: center; justify-content: space-between; }
-        .sidebar-brand { font-size: 1.4rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 10px; }
-        .sidebar-brand::before { content: ''; width: 12px; height: 12px; background: var(--primary); border-radius: 3px; }
+        /* SIDEBAR */
+        .sidebar { width: 320px; background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; transition: 0.3s; z-index: 1000; }
+        @media (max-width: 768px) { .sidebar { position: fixed; left: -320px; height: 100%; width: 85%; } .sidebar.open { left: 0; } }
+        .sidebar-header { padding: 25px; display: flex; justify-content: space-between; align-items: center; }
+        .section-label { font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 1.5px; margin: 20px 0 10px 20px; }
         
-        /* MOBILE CLOSE BUTTON */
-        .close-sidebar { 
-            display: none; background: rgba(255,255,255,0.1); border: none; 
-            color: white; font-size: 1.2rem; width: 35px; height: 35px; 
-            border-radius: 50%; cursor: pointer; align-items: center; justify-content: center;
-        }
-        @media (max-width: 768px) { .close-sidebar { display: flex; } }
-
-        .search-area { padding: 0 20px 20px; }
-        .search-wrapper { 
-            display: flex; background: var(--glass); border: 1px solid var(--glass-border); 
-            border-radius: 12px; padding: 4px; transition: 0.2s;
-        }
-        #user-search { flex: 1; background: none; border: none; color: #fff; padding: 10px; outline: none; font-size: 0.9rem; }
-        .btn-find { background: var(--primary); border: none; color: #fff; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; }
-
-        .sidebar-scroll { flex: 1; overflow-y: auto; padding: 0 16px; }
-        .section-label { font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1.5px; margin: 24px 0 12px 8px; }
-
-        .suggest-item { 
-            background: var(--glass); border: 1px solid var(--glass-border); 
-            border-radius: 14px; padding: 12px; margin-bottom: 8px; 
-            display: flex; align-items: center; justify-content: space-between;
-        }
-        .btn-add-mini { color: var(--primary); font-weight: 700; cursor: pointer; font-size: 0.8rem; padding: 6px 12px; border-radius: 8px; }
-
-        .chat-item { 
-            display: flex; align-items: center; gap: 12px; padding: 12px; 
-            border-radius: 14px; cursor: pointer; transition: 0.2s; margin-bottom: 4px;
-        }
+        .sidebar-scroll { flex: 1; overflow-y: auto; padding: 0 15px; }
+        .chat-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; cursor: pointer; transition: 0.2s; margin-bottom: 5px; }
         .chat-item:hover { background: var(--glass); }
-        .chat-item.active { background: var(--primary); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3); }
+        .chat-item.active { background: var(--primary); }
+        .avatar { width: 40px; height: 40px; border-radius: 10px; background: #334155; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+        /* MAIN */
+        .main-container { flex: 1; display: flex; flex-direction: column; background: #fff; width: 100%; }
+        .chat-header { height: 70px; padding: 0 20px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 15px; }
+        #chat-window { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #fdfdff; }
         
-        .avatar { 
-            width: 44px; height: 44px; border-radius: 12px; background: #334155; 
-            display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff;
-            position: relative; flex-shrink: 0;
-        }
+        /* MESSAGES */
+        .msg { max-width: 80%; padding: 10px 15px; border-radius: 15px; font-size: 0.95rem; word-wrap: break-word; }
+        .msg.me { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
+        .msg.them { align-self: flex-start; background: #f1f5f9; color: #334155; border-bottom-left-radius: 4px; }
+        .media-content { max-width: 100%; border-radius: 8px; margin-top: 5px; cursor: pointer; }
 
-        /* --- MAIN CONTENT --- */
-        .main-container { flex: 1; display: flex; flex-direction: column; background: #fff; position: relative; width: 100%; }
-        .chat-header { height: 70px; padding: 0 20px; display: flex; align-items: center; border-bottom: 1px solid #f1f5f9; gap: 12px; }
-        
-        /* MENU TOGGLE FOR MOBILE */
-        .menu-btn { 
-            display: none; background: #f1f5f9; border: none; padding: 10px; 
-            border-radius: 10px; cursor: pointer; color: var(--sidebar-bg); font-size: 1.2rem;
-        }
-        @media (max-width: 768px) { .menu-btn { display: flex; } }
-
-        #chat-window { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: #fdfdff; }
-        .msg { max-width: 80%; padding: 12px 16px; font-size: 0.95rem; line-height: 1.5; }
-        .msg.me { align-self: flex-end; background: var(--primary); color: #fff; border-radius: 18px 18px 4px 18px; }
-        .msg.them { align-self: flex-start; background: #fff; color: #334155; border-radius: 18px 18px 18px 4px; border: 1px solid #e2e8f0; }
-
-        .input-bar { padding: 15px 20px; background: #fff; display: flex; gap: 10px; align-items: center; border-top: 1px solid #f1f5f9; }
-        .input-wrapper { flex: 1; background: #f1f5f9; border-radius: 12px; display: flex; align-items: center; }
-        #msg-input { flex: 1; background: none; border: none; padding: 12px; outline: none; font-size: 1rem; }
-        .btn-send { background: var(--primary); border: none; border-radius: 12px; width: 45px; height: 45px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-
-        .sidebar-footer { padding: 20px; background: rgba(0,0,0,0.2); }
-        .logout-btn { width: 100%; padding: 12px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 12px; font-weight: 700; cursor: pointer; }
+        /* INPUT BAR */
+        .input-bar { padding: 15px 20px; display: flex; gap: 10px; align-items: center; border-top: 1px solid #f1f5f9; }
+        .input-wrapper { flex: 1; background: #f1f5f9; border-radius: 25px; padding: 5px 15px; display: flex; align-items: center; gap: 10px; }
+        #msg-input { flex: 1; border: none; background: none; padding: 10px; outline: none; }
+        .btn-icon { color: var(--primary); cursor: pointer; font-size: 1.2rem; }
+        .btn-send { background: var(--primary); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-brand">CONNECT</div>
-            <button class="close-sidebar" onclick="toggleSidebar()">✕</button>
+            <div style="font-weight:800; color:var(--primary); font-size:1.2rem;">CONNECT</div>
+            <button onclick="toggleSidebar()" style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;">✕</button>
         </div>
-        
-        <div class="search-area">
-            <div class="search-wrapper">
-                <input type="text" id="user-search" placeholder="Search..." onkeypress="if(event.key==='Enter') doSearch()">
-                <button class="btn-find" onclick="doSearch()">Find</button>
+        <div style="padding: 0 20px;">
+            <div style="display:flex; background:var(--glass); border-radius:10px; padding:5px;">
+                <input type="text" id="user-search" placeholder="Search users..." style="background:none; border:none; color:white; padding:8px; flex:1; outline:none;">
+                <button onclick="doSearch()" style="background:var(--primary); border:none; color:white; border-radius:8px; padding:5px 12px; cursor:pointer;">Find</button>
             </div>
             <div id="search-results"></div>
         </div>
-
         <div class="sidebar-scroll">
             <div class="section-label">Suggestions</div>
             <div id="suggestions-list"></div>
             <div class="section-label">Requests</div>
             <div id="requests-list"></div>
-            <div class="section-label">Messages</div>
+            <div class="section-label">Friends</div>
             <div id="friends-list"></div>
         </div>
-
-        <div class="sidebar-footer">
-            <span style="font-size:0.75rem; color:#94a3b8; margin-bottom:8px; display:block;">Logged as: <b id="my-name" style="color:white"></b></span>
-            <button class="logout-btn" onclick="logout()">Sign Out</button>
+        <div style="padding:20px; background:rgba(0,0,0,0.2)">
+            <p style="font-size:0.7rem; margin-bottom:10px;">Logged as: <b id="my-name"></b></p>
+            <button onclick="logout()" style="width:100%; padding:10px; background:#ef4444; border:none; color:white; border-radius:10px; cursor:pointer;">Sign Out</button>
         </div>
     </div>
 
     <div class="main-container">
         <div class="chat-header">
-            <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-            <div class="avatar" id="header-avatar" style="width:40px; height:40px; background:var(--primary); font-size:0.9rem;">?</div>
+            <button onclick="toggleSidebar()" style="background:#f1f5f9; border:none; padding:10px; border-radius:10px; cursor:pointer;" class="mobile-only">☰</button>
+            <div class="avatar" id="header-avatar">?</div>
             <div style="display:flex; flex-direction:column">
-                <span id="chat-target" style="font-weight:700; font-size:1rem;">Select Chat</span>
-                <span id="online-status" style="font-size:0.7rem; color:#22c55e; display:none;">• Active now</span>
+                <span id="chat-target" style="font-weight:700;">Select Chat</span>
+                <span id="online-status" style="font-size:0.7rem; color:#22c55e; display:none;">• Online</span>
             </div>
         </div>
-
         <div id="chat-window"></div>
-
         <div class="input-bar">
             <div class="input-wrapper">
-                <input type="text" id="msg-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') send()">
+                <label class="btn-icon">
+                    <i class="fa-solid fa-paperclip"></i>
+                    <input type="file" id="file-input" style="display:none;" onchange="uploadFile(this)">
+                </label>
+                <input type="text" id="msg-input" placeholder="Aa" onkeypress="if(event.key==='Enter') send()">
             </div>
-            <button class="btn-send" onclick="send()">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-            </button>
+            <button class="btn-send" onclick="send()"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
 
 <script>
-    const scriptURL = "PASTE_YOUR_SCRIPT_URL_HERE";
+    const scriptURL = "REPLACE_WITH_YOUR_NEW_DEPLOY_URL";
     const myName = localStorage.getItem("username") || "Guest";
     document.getElementById('my-name').innerText = myName;
     let activeFriend = null;
 
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-    function logout() { localStorage.removeItem("username"); window.location.href = "index.html"; }
+    function logout() { localStorage.clear(); window.location.href = "index.html"; }
 
     function apiCall(params, callback) {
         const script = document.createElement('script');
         script.src = `${scriptURL}?${params}&callback=${callback}&me=${encodeURIComponent(myName)}&t=${Date.now()}`;
         document.body.appendChild(script);
-        setTimeout(() => { if(script.parentNode) document.body.removeChild(script); }, 1500);
+        setTimeout(() => { if(script.parentNode) document.body.removeChild(script); }, 2000);
     }
 
     // SEARCH & SUGGESTIONS
     function doSearch() {
-        const q = document.getElementById('user-search').value.trim();
+        const q = document.getElementById('user-search').value;
         if(!q) return;
         apiCall(`action=searchUsers&query=${encodeURIComponent(q)}`, "renderSearch");
     }
-
-    window.renderSearch = function(users) {
-        const resBox = document.getElementById('search-results');
-        if(!users || users.length === 0) { resBox.innerHTML = '<div style="color:#94a3b8;font-size:0.8rem;padding:10px">Not found</div>'; return; }
-        resBox.innerHTML = users.map(u => `<div class="suggest-item"><span>${u.name}</span><span class="btn-add-mini" onclick="addFriend('${u.name}')">+ Add</span></div>`).join('');
+    window.renderSearch = (users) => {
+        const res = document.getElementById('search-results');
+        res.innerHTML = users.map(u => `<div style="display:flex; justify-content:space-between; padding:10px; font-size:0.8rem; color:white"><span>${u.name}</span><span style="color:var(--primary); cursor:pointer" onclick="addFriend('${u.name}')">Add</span></div>`).join('');
     };
 
-    function loadSuggestions() { apiCall(`action=getSuggestions`, "renderSuggestions"); }
-    window.renderSuggestions = function(data) {
-        const list = document.getElementById('suggestions-list');
-        list.innerHTML = (data && data.length > 0) ? data.slice(0, 3).map(u => `<div class="suggest-item"><span>${u.name}</span><span class="btn-add-mini" onclick="addFriend('${u.name}')">Add</span></div>`).join('') : '';
+    window.addFriend = (name) => apiCall(`action=addFriend&friend=${encodeURIComponent(name)}`, "afterAction");
+    window.acceptFriend = (name) => apiCall(`action=acceptFriend&friend=${encodeURIComponent(name)}`, "afterAction");
+    window.afterAction = () => { alert("Action Successful"); loadAll(); };
+
+    function loadAll() {
+        apiCall("action=getSuggestions", "renderSuggestions");
+        apiCall("action=getFriends", "renderFriends");
+        if(activeFriend) apiCall(`action=getMessages&friend=${encodeURIComponent(activeFriend)}`, "renderMessages");
+    }
+
+    window.renderSuggestions = (data) => {
+        document.getElementById('suggestions-list').innerHTML = data.map(u => `<div class="chat-item" onclick="addFriend('${u.name}')"><div class="avatar">${u.name[0]}</div><span>${u.name}</span></div>`).join('');
     };
 
-    window.addFriend = function(name) { apiCall(`action=addFriend&friend=${encodeURIComponent(name)}`, "afterAdd"); };
-    window.afterAdd = function() { alert("Request Sent!"); document.getElementById('search-results').innerHTML = ""; loadFriends(); loadSuggestions(); };
-
-    // FRIENDS & MESSAGING
-    function loadFriends() { apiCall(`action=getFriends`, "renderFriends"); }
-    window.renderFriends = function(data) {
-        const list = document.getElementById('friends-list');
-        const reqList = document.getElementById('requests-list');
-        
-        reqList.innerHTML = (data.requests?.length > 0) ? data.requests.map(r => `
-            <div class="suggest-item"><span>${r.name}</span><span class="btn-add-mini" style="color:#22c55e" onclick="acceptFriend('${r.name}')">Accept</span></div>
-        `).join('') : '<div style="color:#475569; font-size:0.75rem; padding-left:8px;">No requests</div>';
-
-        list.innerHTML = data.friends.map(f => `
-            <div class="chat-item ${activeFriend === f.name ? 'active' : ''}" onclick="openChat('${f.name}')">
-                <div class="avatar" style="background:${stringToColor(f.name)}">${f.name[0].toUpperCase()}</div>
-                <span style="font-weight:600">${f.name}</span>
-            </div>
-        `).join('');
+    window.renderFriends = (data) => {
+        document.getElementById('requests-list').innerHTML = data.requests.map(r => `<div class="chat-item" style="border:1px solid var(--primary)"><div class="avatar">${r.name[0]}</div><span>${r.name}</span><button onclick="acceptFriend('${r.name}')" style="margin-left:auto; background:var(--primary); border:none; color:white; border-radius:5px; padding:4px 8px;">Accept</button></div>`).join('');
+        document.getElementById('friends-list').innerHTML = data.friends.map(f => `<div class="chat-item ${activeFriend===f.name?'active':''}" onclick="openChat('${f.name}')"><div class="avatar">${f.name[0]}</div><span>${f.name}</span> ${f.online?'<div style="width:8px; height:8px; background:#22c55e; border-radius:50%; margin-left:auto"></div>':''}</div>`).join('');
     };
-
-    window.acceptFriend = function(name) { apiCall(`action=acceptFriend&friend=${encodeURIComponent(name)}`, "loadFriends"); };
 
     function openChat(name) {
         activeFriend = name;
         document.getElementById('chat-target').innerText = name;
-        document.getElementById('header-avatar').innerText = name[0].toUpperCase();
-        document.getElementById('header-avatar').style.background = stringToColor(name);
+        document.getElementById('header-avatar').innerText = name[0];
         document.getElementById('online-status').style.display = 'block';
-        if(window.innerWidth <= 768) toggleSidebar(); // Auto-close on selection
-        loadMessages();
-    }
-
-    function loadMessages() {
-        if(!activeFriend) return;
+        if(window.innerWidth < 768) toggleSidebar();
         apiCall(`action=getMessages&friend=${encodeURIComponent(activeFriend)}`, "renderMessages");
     }
 
-    window.renderMessages = function(msgs) {
-        document.getElementById('chat-window').innerHTML = msgs.map(m => `<div class="msg ${m.user.toLowerCase() === myName.toLowerCase() ? 'me' : 'them'}">${m.text}</div>`).join('');
-        const win = document.getElementById('chat-window'); win.scrollTop = win.scrollHeight;
+    window.renderMessages = (msgs) => {
+        const win = document.getElementById('chat-window');
+        win.innerHTML = msgs.map(m => {
+            let text = m.text;
+            if(text.match(/\.(jpg|jpeg|png|gif)$/i)) text = `<img src="${text}" class="media-content" onclick="window.open('${text}')">`;
+            else if(text.includes("drive.google.com")) text = `<a href="${text}" target="_blank" style="color:inherit;">📎 View Attached File</a>`;
+            return `<div class="msg ${m.user.toLowerCase() === myName.toLowerCase() ? 'me' : 'them'}">${text}</div>`;
+        }).join('');
+        win.scrollTop = win.scrollHeight;
     };
 
     async function send() {
         const input = document.getElementById('msg-input');
-        if(!input.value.trim() || !activeFriend) return;
+        if(!input.value || !activeFriend) return;
         const text = input.value; input.value = "";
         await fetch(`${scriptURL}?action=sendMessage&username=${encodeURIComponent(myName)}&recipient=${encodeURIComponent(activeFriend)}&text=${encodeURIComponent(text)}`, {mode:'no-cors'});
-        loadMessages();
+        loadAll();
     }
 
-    function stringToColor(str) {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) { hash = str.charCodeAt(i) + ((hash << 5) - hash); }
-        const c = (hash & 0x00FFFFFF).toString(16).toUpperCase();
-        return "#" + "00000".substring(0, 6 - c.length) + c;
+    async function uploadFile(input) {
+        const file = input.files[0]; if(!file || !activeFriend) return;
+        const reader = new FileReader();
+        document.getElementById('msg-input').placeholder = "Uploading...";
+        reader.onload = async () => {
+            const base64 = reader.result.split(',')[1];
+            await fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: new URLSearchParams({ action:'uploadFile', me:myName, recipient:activeFriend, fileName:file.name, mimeType:file.type, fileData:base64 })
+            });
+            document.getElementById('msg-input').placeholder = "Aa";
+            loadAll();
+        };
+        reader.readAsDataURL(file);
     }
 
-    setInterval(() => { loadFriends(); loadSuggestions(); if(activeFriend) loadMessages(); }, 5000);
-    loadFriends(); loadSuggestions();
+    setInterval(loadAll, 5000);
+    loadAll();
 </script>
 </body>
 </html>

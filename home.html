@@ -4,54 +4,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OJT Portal</title>
     <style>
-        :root { --primary: #6366f1; --dark: #0f172a; --blue-accent: #3b82f6; }
+        :root { --primary: #6366f1; --dark: #0f172a; --blue-accent: #3b82f6; --text-muted: #64748b; }
         body { margin: 0; display: flex; height: 100vh; font-family: 'Segoe UI', sans-serif; background: #f8fafc; overflow: hidden; }
         
         /* Sidebar */
         .sidebar { width: 300px; background: var(--dark); color: white; display: flex; flex-direction: column; padding: 20px; }
-        .logo { color: #3b82f6; font-weight: bold; font-size: 1.2rem; margin-bottom: 20px; }
+        .logo { color: var(--blue-accent); font-weight: bold; font-size: 1.2rem; margin-bottom: 20px; text-transform: uppercase; }
         
         /* Search Box */
-        .search-container { display: flex; gap: 5px; margin-bottom: 25px; }
-        .search-container input { flex: 1; background: #1e293b; border: 1px solid #334155; color: white; padding: 8px; border-radius: 4px; outline: none; }
-        .find-btn { background: var(--blue-accent); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .search-container { display: flex; gap: 8px; margin-bottom: 25px; }
+        #search-box { flex: 1; background: #1e293b; border: 1px solid #334155; color: white; padding: 10px; border-radius: 4px; outline: none; }
+        .find-btn { background: var(--blue-accent); color: white; border: none; padding: 10px 18px; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
-        .section-label { font-size: 0.7rem; color: #64748b; text-transform: uppercase; margin-top: 20px; letter-spacing: 1px; }
+        .section-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-top: 25px; font-weight: 800; letter-spacing: 1px; }
         .list-container { margin-top: 10px; flex: 1; overflow-y: auto; }
         
-        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #1e293b; font-size: 14px; }
-        .add-link { color: var(--blue-accent); text-decoration: none; font-weight: bold; cursor: pointer; font-size: 12px; }
-        .friend-btn { width: 100%; text-align: left; background: none; border: none; color: #cbd5e1; padding: 10px 0; cursor: pointer; border-bottom: 1px solid #1e293b; }
-        .friend-btn:hover { color: white; }
-
-        /* Main Chat */
-        .main { flex: 1; display: flex; flex-direction: column; background: white; position: relative; }
-        .chat-header { padding: 15px 25px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 15px; font-weight: bold; }
-        .header-icon { background: var(--primary); color: white; width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #1e293b; font-size: 14px; }
+        .action-link { color: var(--blue-accent); text-decoration: none; font-weight: bold; cursor: pointer; font-size: 12px; }
         
-        #chat-window { flex: 1; padding: 20px; overflow-y: auto; background: #f1f5f9; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 10px 15px; border-radius: 20px; max-width: 70%; font-size: 14px; }
+        .friend-btn { width: 100%; text-align: left; background: none; border: none; color: #cbd5e1; padding: 12px 0; cursor: pointer; border-bottom: 1px solid #1e293b; font-size: 14px; }
+        .friend-btn:hover { color: white; background: rgba(255,255,255,0.05); }
+
+        /* Main Chat Area */
+        .main { flex: 1; display: flex; flex-direction: column; background: white; position: relative; }
+        .chat-header { padding: 15px 25px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 15px; font-weight: bold; font-size: 1.1rem; }
+        .header-icon { background: var(--primary); color: white; width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+        
+        #chat-window { flex: 1; padding: 25px; overflow-y: auto; background: #f1f5f9; display: flex; flex-direction: column; gap: 12px; }
+        .msg { padding: 12px 18px; border-radius: 20px; max-width: 70%; font-size: 15px; line-height: 1.4; }
         .msg.me { align-self: flex-end; background: var(--blue-accent); color: white; border-bottom-right-radius: 4px; }
-        .msg.them { align-self: flex-start; background: white; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .msg.them { align-self: flex-start; background: white; color: #1e293b; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
-        .input-bar { padding: 15px 20px; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; align-items: center; }
-        #msg-input { flex: 1; padding: 12px 20px; border-radius: 25px; border: 1px solid #e2e8f0; outline: none; background: #f8fafc; }
-        .send-btn { background: var(--blue-accent); color: white; border: none; padding: 10px 25px; border-radius: 25px; cursor: pointer; font-weight: bold; }
+        .input-bar { padding: 15px 25px; border-top: 1px solid #e2e8f0; display: flex; gap: 15px; align-items: center; background: white; }
+        #msg-input { flex: 1; padding: 14px 22px; border-radius: 30px; border: 1px solid #e2e8f0; outline: none; background: #f8fafc; font-size: 15px; }
+        .send-btn { background: var(--blue-accent); color: white; border: none; padding: 12px 30px; border-radius: 30px; cursor: pointer; font-weight: bold; }
 
-        /* Bottom Profile */
-        .bottom-bar { border-top: 1px solid #1e293b; padding-top: 15px; }
-        .logout-btn { width: 100%; background: #f87171; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        /* Logout Section */
+        .sidebar-footer { border-top: 1px solid #1e293b; padding-top: 20px; margin-top: auto; }
+        .user-status { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
+        .logout-btn { width: 100%; background: #f87171; color: white; border: none; padding: 14px; border-radius: 6px; cursor: pointer; font-weight: bold; }
 
-        /* Blocker Overlay */
-        #lock-screen { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:9999; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+        /* Access Blocker */
+        #lock-screen { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:9999; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; }
     </style>
 </head>
 <body>
 
 <div id="lock-screen">
-    <h2 style="color:#ef4444">ACCOUNT IN USE</h2>
-    <p>This account is already open on another device.</p>
-    <button onclick="window.location.reload()" class="find-btn">Retry Connection</button>
+    <h1 style="color:#ef4444">ACCOUNT IN USE</h1>
+    <p>This account is currently active on another device.</p>
+    <button onclick="window.location.reload()" class="find-btn">Reconnect</button>
 </div>
 
 <div class="sidebar">
@@ -63,16 +65,16 @@
     </div>
 
     <div class="section-label">Suggestions</div>
-    <div id="suggestions-list" class="list-container" style="max-height: 150px;"></div>
+    <div id="suggestions-list" class="list-container" style="max-height: 180px;"></div>
 
     <div class="section-label">Requests</div>
-    <div id="requests-list" class="list-container" style="max-height: 100px;"></div>
+    <div id="requests-list" class="list-container" style="max-height: 120px;"></div>
 
     <div class="section-label">My Chats</div>
     <div id="friends-list" class="list-container"></div>
 
-    <div class="bottom-bar">
-        <div style="font-size: 13px;">Logged as: <b id="user-display"></b></div>
+    <div class="sidebar-footer">
+        <div class="user-status">Logged as: <b id="user-display" style="color:white;"></b></div>
         <button class="logout-btn" onclick="logoutAction()">LOGOUT</button>
     </div>
 </div>
@@ -90,9 +92,10 @@
 </div>
 
 <script>
-    const scriptURL = "PASTE_YOUR_NEW_DEPLOYMENT_URL_HERE";
+    const scriptURL = "PASTE_YOUR_DEPLOYMENT_URL_HERE";
     const myName = localStorage.getItem("username") || "Guest";
     
+    // Generate/Get Session ID for Hard Lock
     if(!localStorage.getItem("sid")) {
         localStorage.setItem("sid", "DEV_" + Math.random().toString(36).substr(2, 9));
     }
@@ -118,17 +121,20 @@
             return;
         }
 
+        // Display Suggestions
         document.getElementById('suggestions-list').innerHTML = data.suggestions.map(s => `
-            <div class="item-row"><span>${s.name}</span><a class="add-link" onclick="addFriend('${s.name}')">ADD</a></div>
-        `).join('');
+            <div class="item-row"><span>${s.name}</span><a class="action-link" onclick="addFriend('${s.name}')">ADD</a></div>
+        `).join('') || '<div style="font-size:11px; color:#475569;">No new suggestions</div>';
 
+        // Display Requests
         document.getElementById('requests-list').innerHTML = data.requests.map(r => `
-            <div class="item-row"><span>${r.name}</span><a class="add-link" onclick="acceptFriend('${r.name}')">ACCEPT</a></div>
-        `).join('') || '<div style="font-size:11px; color:#475569;">No requests</div>';
+            <div class="item-row"><span>${r.name}</span><a class="action-link" onclick="acceptFriend('${r.name}')">ACCEPT</a></div>
+        `).join('') || '<div style="font-size:11px; color:#475569;">No pending requests</div>';
 
+        // Display Friends
         document.getElementById('friends-list').innerHTML = data.friends.map(f => `
             <button class="friend-btn" onclick="openChat('${f.name}')">● ${f.name}</button>
-        `).join('') || '<div style="font-size:11px; color:#475569;">No chats</div>';
+        `).join('') || '<div style="font-size:11px; color:#475569;">No chats found</div>';
 
         if(activeFriend) loadMessages();
     };
@@ -148,7 +154,8 @@
         document.getElementById('chat-window').innerHTML = msgs.map(m => `
             <div class="msg ${m.user.toLowerCase() === myName.toLowerCase() ? 'me' : 'them'}">${m.text}</div>
         `).join('');
-        const win = document.getElementById('chat-window'); win.scrollTop = win.scrollHeight;
+        const win = document.getElementById('chat-window');
+        win.scrollTop = win.scrollHeight;
     };
 
     async function send() {
@@ -156,6 +163,7 @@
         if(!input.value.trim() || !activeFriend) return;
         const txt = input.value; input.value = "";
         
+        // Optimistic UI update for speed
         document.getElementById('chat-window').innerHTML += `<div class="msg me">${txt}</div>`;
         const win = document.getElementById('chat-window'); win.scrollTop = win.scrollHeight;
 
@@ -168,7 +176,7 @@
     function logoutAction() { apiCall(`action=logout`, "finalizeLogout"); }
     window.finalizeLogout = () => { localStorage.clear(); window.location.href = "index.html"; };
 
-    setInterval(sync, 10000);
+    setInterval(sync, 10000); // Sync data every 10 seconds
     sync();
 </script>
 </body>

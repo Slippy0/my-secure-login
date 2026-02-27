@@ -1,84 +1,70 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OJT Portal</title>
     <style>
-        :root { --primary: #6366f1; --sidebar-bg: #111827; }
-        body { margin: 0; display: flex; height: 100vh; font-family: sans-serif; background: #f3f4f6; }
-        .sidebar { width: 280px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 15px; }
+        :root { --primary: #6366f1; --dark: #0f172a; }
+        body { margin: 0; display: flex; height: 100vh; font-family: 'Segoe UI', sans-serif; background: #f8fafc; }
+        .sidebar { width: 300px; background: var(--dark); color: white; display: flex; flex-direction: column; padding: 20px; }
         .main { flex: 1; display: flex; flex-direction: column; background: white; }
-        .section-title { font-size: 0.7rem; color: #6b7280; text-transform: uppercase; margin: 15px 0 5px; }
-        .item { padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
-        .friend-link { cursor: pointer; padding: 10px; border-radius: 8px; display: block; color: white; text-decoration: none; }
-        .friend-link:hover, .friend-link.active { background: var(--primary); }
-        #chat-window { flex: 1; padding: 20px; overflow-y: auto; background: #f9fafb; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 10px 15px; border-radius: 15px; max-width: 70%; font-size: 0.9rem; }
-        .msg.me { align-self: flex-end; background: var(--primary); color: white; }
-        .msg.them { align-self: flex-start; background: #e5e7eb; color: black; }
-        .input-area { padding: 15px; border-top: 1px solid #eee; display: flex; gap: 10px; }
-        input { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ddd; outline: none; }
-        button { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 15px; cursor: pointer; }
+        .section-label { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; margin: 25px 0 10px; font-weight: 800; letter-spacing: 1px; }
+        .item-card { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
+        .friend-btn { width: 100%; text-align: left; background: none; border: none; color: #cbd5e1; padding: 12px; border-radius: 10px; cursor: pointer; margin-bottom: 4px; font-weight: 500; }
+        .friend-btn:hover, .friend-btn.active { background: var(--primary); color: white; }
+        #chat-window { flex: 1; padding: 20px; overflow-y: auto; background: #f1f5f9; display: flex; flex-direction: column; gap: 8px; }
+        .msg { padding: 10px 16px; border-radius: 18px; max-width: 75%; font-size: 0.95rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .msg.me { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
+        .msg.them { align-self: flex-start; background: white; color: #1e293b; border-bottom-left-radius: 2px; }
+        .input-bar { padding: 20px; border-top: 1px solid #e2e8f0; display: flex; gap: 12px; background: white; }
+        #msg-input { flex: 1; padding: 12px 20px; border-radius: 25px; border: 1px solid #e2e8f0; outline: none; background: #f8fafc; }
+        .send-btn { background: var(--primary); color: white; border: none; padding: 0 25px; border-radius: 25px; cursor: pointer; font-weight: 600; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <h3 style="color:var(--primary)">OJT CONNECT</h3>
-    <div style="display:flex; gap:5px; margin-bottom:15px;">
-        <input type="text" id="user-search" placeholder="Search..." style="background:#1f2937; border:none; color:white;">
-        <button onclick="doSearch()">Find</button>
-    </div>
-    <div id="search-results"></div>
-
-    <div class="section-title">Suggestions</div>
+    <h2 style="color:white; margin:0 0 5px;">OJT CONNECT</h2>
+    <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 20px;">Secure Messaging Portal</p>
+    
+    <div class="section-label">People You May Know</div>
     <div id="suggestions-list"></div>
 
-    <div class="section-title">Requests</div>
+    <div class="section-label">Friend Requests</div>
     <div id="requests-list"></div>
 
-    <div class="section-title">Messages</div>
+    <div class="section-label">Messages</div>
     <div id="friends-list"></div>
 
-    <div style="margin-top:auto; padding-top:10px; border-top:1px solid #374151;">
-        <div style="font-size:0.8rem">User: <b id="display-name"></b></div>
-        <button onclick="logout()" style="background:#ef4444; width:100%; margin-top:5px;">Logout</button>
+    <div style="margin-top:auto; padding-top:20px; border-top:1px solid #1e293b;">
+        <div style="font-size:0.8rem; margin-bottom:12px; color:#94a3b8;">Logged as: <b id="user-display" style="color:white"></b></div>
+        <button onclick="logout()" style="width:100%; background:#ef4444; color:white; border:none; padding:12px; border-radius:10px; cursor:pointer; font-weight:700;">LOGOUT</button>
     </div>
 </div>
 
 <div class="main">
-    <div style="padding:15px; border-bottom:1px solid #eee; font-weight:bold;" id="chat-target">Select a friend</div>
+    <div style="padding:18px 25px; border-bottom:1px solid #e2e8f0; font-weight:700; color:#1e293b; font-size:1.1rem;" id="chat-header">Select a friend</div>
     <div id="chat-window"></div>
-    <div class="input-area">
-        <input type="text" id="msg-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') send()">
-        <button onclick="send()">Send</button>
+    <div class="input-bar">
+        <input type="text" id="msg-input" placeholder="Write a message..." onkeypress="if(event.key==='Enter') send()">
+        <button class="send-btn" onclick="send()">Send</button>
     </div>
 </div>
 
 <script>
+    // MAKE SURE TO UPDATE THIS URL AFTER RE-DEPLOYING
     const scriptURL = "https://script.google.com/macros/s/AKfycbxqHFa-SUSDC7uE3nJBdYSG2lhtuQb2FaVpybW2yT4gBoFdGGVyYAIQvTGEdJPv8rUU/exec";
+    
     const myName = localStorage.getItem("username") || "Guest";
-    document.getElementById('display-name').innerText = myName;
+    document.getElementById('user-display').innerText = myName;
     let activeFriend = null;
 
     function apiCall(params, callback) {
         const script = document.createElement('script');
         script.src = `${scriptURL}?${params}&callback=${callback}&me=${encodeURIComponent(myName)}&t=${Date.now()}`;
         document.body.appendChild(script);
-        setTimeout(() => { if(script.parentNode) document.body.removeChild(script); }, 1500);
+        setTimeout(() => { if(script.parentNode) document.body.removeChild(script); }, 2000);
     }
-
-    function doSearch() {
-        const q = document.getElementById('user-search').value;
-        apiCall(`action=searchUsers&query=${encodeURIComponent(q)}`, "renderSearch");
-    }
-
-    window.renderSearch = (d) => {
-        document.getElementById('search-results').innerHTML = d.map(u => `<div class="item"><span>${u.name}</span><button onclick="addFriend('${u.name}')">Add</button></div>`).join('');
-    };
-
-    window.addFriend = (n) => apiCall(`action=addFriend&friend=${encodeURIComponent(n)}`, "loadAll");
-    window.acceptFriend = (n) => apiCall(`action=acceptFriend&friend=${encodeURIComponent(n)}`, "loadAll");
 
     function loadAll() {
         apiCall(`action=getFriends`, "renderFriends");
@@ -88,38 +74,61 @@
 
     window.renderFriends = (data) => {
         const d = typeof data === 'string' ? JSON.parse(data) : data;
-        document.getElementById('requests-list').innerHTML = d.requests.map(r => `<div class="item"><span>${r.name}</span><button onclick="acceptFriend('${r.name}')">Accept</button></div>`).join('');
-        document.getElementById('friends-list').innerHTML = d.friends.map(f => `<div class="friend-link ${activeFriend===f.name?'active':''}" onclick="openChat('${f.name}')">${f.name}</div>`).join('');
+        
+        document.getElementById('requests-list').innerHTML = d.requests.map(r => `
+            <div class="item-card">
+                <span style="font-weight:600">${r.name}</span>
+                <button onclick="acceptFriend('${r.name}')" style="background:#22c55e; border:none; color:white; padding:5px 10px; border-radius:6px; cursor:pointer; font-size:0.8rem;">Accept</button>
+            </div>
+        `).join('') || '<div style="color:#64748b; font-size:0.75rem; padding-left:5px;">No new requests</div>';
+
+        document.getElementById('friends-list').innerHTML = d.friends.map(f => `
+            <button class="friend-btn ${activeFriend === f.name ? 'active' : ''}" onclick="openChat('${f.name}')">
+                <span style="margin-right:8px;">●</span>${f.name}
+            </button>
+        `).join('') || '<div style="color:#64748b; font-size:0.75rem; padding-left:5px;">Your chat list is empty</div>';
     };
 
     window.renderSuggestions = (data) => {
         const d = typeof data === 'string' ? JSON.parse(data) : data;
-        document.getElementById('suggestions-list').innerHTML = d.map(u => `<div class="item"><span>${u.name}</span><button onclick="addFriend('${u.name}')">Add</button></div>`).join('');
+        document.getElementById('suggestions-list').innerHTML = d.slice(0, 4).map(u => `
+            <div class="item-card">
+                <span style="font-weight:500">${u.name}</span>
+                <button onclick="addFriend('${u.name}')" style="background:none; border:none; color:var(--primary); font-weight:800; cursor:pointer;">ADD</button>
+            </div>
+        `).join('') || '<div style="color:#64748b; font-size:0.75rem; padding-left:5px;">No one new to add</div>';
     };
 
-    function openChat(n) {
-        activeFriend = n;
-        document.getElementById('chat-target').innerText = n;
+    function openChat(name) {
+        activeFriend = name;
+        document.getElementById('chat-header').innerText = name;
         loadMessages();
     }
 
     function loadMessages() {
+        if(!activeFriend) return;
         apiCall(`action=getMessages&friend=${encodeURIComponent(activeFriend)}`, "renderMessages");
     }
 
     window.renderMessages = (msgs) => {
-        document.getElementById('chat-window').innerHTML = msgs.map(m => `<div class="msg ${m.user.toLowerCase() === myName.toLowerCase() ? 'me' : 'them'}">${m.text}</div>`).join('');
-        const w = document.getElementById('chat-window'); w.scrollTop = w.scrollHeight;
+        document.getElementById('chat-window').innerHTML = msgs.map(m => `
+            <div class="msg ${m.user.toLowerCase() === myName.toLowerCase() ? 'me' : 'them'}">${m.text}</div>
+        `).join('');
+        const win = document.getElementById('chat-window');
+        win.scrollTop = win.scrollHeight;
     };
 
     async function send() {
-        const i = document.getElementById('msg-input');
-        if(!i.value || !activeFriend) return;
-        const txt = i.value; i.value = "";
-        await fetch(`${scriptURL}?action=sendMessage&username=${encodeURIComponent(myName)}&recipient=${encodeURIComponent(activeFriend)}&text=${encodeURIComponent(txt)}`, {mode:'no-cors'});
+        const input = document.getElementById('msg-input');
+        if(!input.value.trim() || !activeFriend) return;
+        const text = input.value;
+        input.value = "";
+        await fetch(`${scriptURL}?action=sendMessage&username=${encodeURIComponent(myName)}&recipient=${encodeURIComponent(activeFriend)}&text=${encodeURIComponent(text)}`, {mode:'no-cors'});
         loadMessages();
     }
 
+    window.addFriend = (name) => apiCall(`action=addFriend&friend=${encodeURIComponent(name)}`, "loadAll");
+    window.acceptFriend = (name) => apiCall(`action=acceptFriend&friend=${encodeURIComponent(name)}`, "loadAll");
     function logout() { localStorage.removeItem("username"); window.location.href="index.html"; }
 
     setInterval(loadAll, 5000);

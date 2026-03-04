@@ -131,11 +131,8 @@
     </div>
 
 <script>
-    // REPLACE THIS URL WITH YOUR NEW DEPLOYMENT URL
-    const scriptURL = "PASTE_YOUR_NEW_WEBAPP_URL_HERE";
-    const myName = localStorage.getItem("username");
-    
-    if(!myName) { window.location.href = "index.html"; }
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxqHFa-SUSDC7uE3nJBdYSG2lhtuQb2FaVpybW2yT4gBoFdGGVyYAIQvTGEdJPv8rUU/exec";
+    const myName = localStorage.getItem("username") || "Guest";
     document.getElementById('my-name').innerText = myName;
     let activeFriend = null;
 
@@ -204,7 +201,6 @@
         const input = document.getElementById('msg-input');
         if(!input.value.trim() || !activeFriend) return;
         const text = input.value; input.value = "";
-        // Direct fetch for sending (no-cors is okay for simple append)
         await fetch(`${scriptURL}?action=sendMessage&username=${encodeURIComponent(myName)}&recipient=${encodeURIComponent(activeFriend)}&text=${encodeURIComponent(text)}`, {mode:'no-cors'});
         loadMessages();
     }
@@ -216,14 +212,10 @@
         return "#" + "00000".substring(0, 6 - c.length) + c;
     }
 
-    setInterval(() => { 
-        loadFriends(); 
-        loadSuggestions(); 
-        if(activeFriend) loadMessages(); 
-    }, 5000);
-    
-    loadFriends(); 
-    loadSuggestions();
+    setInterval(() => { loadFriends(); loadSuggestions(); if(activeFriend) loadMessages(); }, 5000);
+    loadFriends(); loadSuggestions();
 </script>
 </body>
 </html>
+
+

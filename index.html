@@ -15,7 +15,6 @@
         .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #90949c; }
         .main-btn { width: 100%; padding: 14px; background: var(--primary); border: none; color: white; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; transition: 0.3s; }
         .toggle-link { color: var(--primary); cursor: pointer; font-weight: 600; text-decoration: none; }
-        footer { margin-top: 20px; font-size: 10px; color: #90949c; }
     </style>
 </head>
 <body>
@@ -33,11 +32,11 @@
         </form>
         <hr style="border:0; border-top:1px solid #dddfe2; margin:20px 0;">
         <div id="toggle-text">New here? <a class="toggle-link" onclick="toggleView()">Create account</a></div>
-        <footer>Educational Project - Do not use real passwords</footer>
     </div>
 
     <script>
-        const scriptURL = "https://script.google.com/macros/s/AKfycbx5Q-OExsT0kwTr6ZKUOtKu9-LMtyh3AvgvISjwmc0mgpOLN0BZ04lLHyMthls91LpT/exec";
+        // REPLACE THIS URL WITH YOUR NEW DEPLOYMENT URL
+        const scriptURL = "PASTE_YOUR_NEW_WEBAPP_URL_HERE";
         let currentMode = 'login';
 
         function togglePassword() {
@@ -77,14 +76,13 @@
                 if (result.includes("Successful")) {
                     if (currentMode === 'login') {
                         localStorage.setItem("username", formData.get("username"));
-                        window.location.replace("home.html");
+                        window.location.href = "home.html"; // Ensure your home file is named home.html
                     } else {
                         setTimeout(() => toggleView(), 1500);
                     }
                 }
-            } catch (error) { msg.innerText = "❌ Connection Error. Check script URL."; }
+            } catch (error) { msg.innerText = "❌ Connection Error."; }
         });
     </script>
 </body>
 </html>
-
